@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
+using DXF;
 //using System.Drawing.Drawing2D;
 
 namespace Viewer2DTest
@@ -40,6 +41,15 @@ namespace Viewer2DTest
         //LINE line;
         List<LINE> lines = new List<LINE>();
         
+        public class LAYER
+        {
+            public string name { get; set; }
+            public Color color { get; set; }
+            public Font font { get; set; }
+        }
+
+        List<LAYER> layers = new List<LAYER>();
+
         public double maxX = 0;
         public double maxY = 0;
         public double minX = 0;
@@ -261,6 +271,16 @@ namespace Viewer2DTest
             points.Add(point);
         }
 
+        public void AddPoint(string layer, string cislo, double y, double x)
+        {
+            // doplnit vrstvu - 
+            POINT point = new POINT();
+            point.cislo = cislo;
+            point.x = x;
+            point.y = y;
+            points.Add(point);
+        }
+
         public void ClearAllPoints()
         {
             points.Clear();
@@ -268,6 +288,15 @@ namespace Viewer2DTest
         
         public void AddLine(string startPoint, string endPoint)
         {
+            LINE line = new LINE();
+            line.startPoint = startPoint;
+            line.endPoint = endPoint;
+            lines.Add(line);
+        }
+
+        public void AddLine(string layer, string startPoint, string endPoint)
+        {
+            // doplnit vrstvu
             LINE line = new LINE();
             line.startPoint = startPoint;
             line.endPoint = endPoint;
@@ -335,6 +364,11 @@ namespace Viewer2DTest
             DrawNumbers(blackBrush, FontArial);
             DrawLines(peroBlue);
             DrawPoint(peroRed);
+        }
+        
+        public void ImportDTM(List<string> pointsX, List<string> lines, List<string> triangles)
+        {
+            // Import triangles from DTM
         }
 
     }

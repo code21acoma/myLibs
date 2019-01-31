@@ -26,8 +26,6 @@ See the Group 72 and 73 integer codes table for clarification.
 
 */
 
-
-
 namespace DXF
 {
     class DXF
@@ -45,7 +43,7 @@ namespace DXF
             public double thick { get; set; }
         }
         
-        List<LINE> LINElist = new List<LINE>();
+        public List<LINE> LINElist = new List<LINE>();
 
         public class TEXT
         {
@@ -77,7 +75,7 @@ namespace DXF
             public string type { get; set; }  // typ pisma ??? STANDARD
         }
 
-        List<TEXT> TEXTlist = new List<TEXT>();
+        public List<TEXT> TEXTlist = new List<TEXT>();
 
         public class ARC
         {
@@ -95,7 +93,7 @@ namespace DXF
             public double ext_z { get; set; }
         }
 
-        List<ARC> ARClist = new List<ARC>();
+        public List<ARC> ARClist = new List<ARC>();
 
         public class CIRCLE
         {
@@ -108,7 +106,7 @@ namespace DXF
             public double radius { get; set; }
         }
 
-        List<CIRCLE> CIRCLElist = new List<CIRCLE>();
+        public List<CIRCLE> CIRCLElist = new List<CIRCLE>();
 
         public class POINT
         {
@@ -120,7 +118,7 @@ namespace DXF
             public double thick { get; set; }
         }
 
-        List<POINT> POINTlist = new List<POINT>();
+        public List<POINT> POINTlist = new List<POINT>();
 
 
         static string RemoveWhiteSpaces(string value)
@@ -571,7 +569,7 @@ namespace DXF
                 if (radek == "LINE") importLine(dxf);
                 if (radek == "CIRCLE") importCircle(dxf);                
                 if (radek == "ARC") importArc(dxf);
-                if (radek == "TEXT") importText(dxf);                
+                if ((radek == "TEXT") || (radek == "MTEXT")) importText(dxf);                
             }
 
         }
@@ -747,5 +745,85 @@ namespace DXF
 
             TEXTlist.Add(text);
         }
+
+        public List<string> getLayers()
+        {
+            List<string> layers = new List<string>();            
+
+            foreach (POINT point in POINTlist)
+            {
+                if (layers.Contains(point.layer) == false) layers.Add(point.layer);
+            }
+
+            foreach (LINE line in LINElist)
+            {
+                if (layers.Contains(line.layer) == false) layers.Add(line.layer);
+            }
+
+            foreach (CIRCLE circle in CIRCLElist)
+            {
+                if (layers.Contains(circle.layer) == false) layers.Add(circle.layer);
+            }
+
+            foreach (ARC arc in ARClist)
+            {
+                if (layers.Contains(arc.layer) == false) layers.Add(arc.layer);
+            }
+
+            foreach (TEXT text in TEXTlist)
+            {
+                if (layers.Contains(text.layer) == false) layers.Add(text.layer);
+            }
+
+            return layers;
+        }
+
+        
+        public List<string> ExportPoints(string layer)
+        {
+            List<string> list = new List<string>();
+            if (layer == null)
+            {
+                foreach (TEXT text in TEXTlist)
+                {
+                    list.Add(text.write + " " + (-text.x).ToString() + " " + (-text.y).ToString() + " " + (text.z).ToString());
+                }
+            }
+            else
+            {
+                var pl = TEXTlist.Where(p => p.layer == layer);
+                List<TEXT> myPoints = new List<TEXT>(pl);
+                foreach (TEXT text in myPoints)
+                {
+                    list.Add(text.write + " " + (-text.x).ToString() + " " + (-text.y).ToString() + " " + (text.z).ToString());
+                }
+            }
+
+            return list;
+        }
+
+        public List<string> ExportLines(string layer)
+        {
+            List<string> list = new List<string>();
+            if (layer == null)
+            {
+                foreach (LINE line in LINElist)
+                {
+                    list.Add((-line.x1).ToString() + " " + (-line.y1).ToString() + " " + (line.z1).ToString() + " " + (-line.x2).ToString() + " " + (-line.y2).ToString() + " " + (line.z2).ToString());
+                }
+            }
+            else
+            {
+                var pl = LINElist.Where(p => p.layer == layer);
+                List<LINE> myLines = new List<LINE>(pl);
+                foreach (LINE line in myLines)
+                {
+                    list.Add((-line.x1).ToString() + " " + (-line.y1).ToString() + " " + (line.z1).ToString() + " " + (-line.x2).ToString() + " " + (-line.y2).ToString() + " " + (line.z2).ToString());
+                }
+            }
+
+            return list;
+        }
+
     }
 }
