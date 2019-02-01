@@ -825,5 +825,58 @@ namespace DXF
             return list;
         }
 
+        public TEXT GetCoordinates(string pointName)
+        {
+            TEXT returnText = new TEXT();
+            string coordinates = "";
+            foreach (TEXT text in TEXTlist)
+            {
+                if (pointName == text.write) return text;                
+            }
+            return returnText;
+        }
+
+
+        public void ImportDtmFile(string file)
+        {
+            string pointsName = "points";
+            string breaklineName = "breaklines";
+            string triangleName = "triangles";            
+
+            string radek;
+            string[] parts;
+
+            StreamReader sR = new StreamReader(file);
+            int count = Convert.ToInt32(sR.ReadLine());
+            for (int i = 0; i < count; i++)
+            {
+                radek = sR.ReadLine();
+                parts = radek.Split(' ');
+                addText(parts[0], Convert.ToDouble(parts[1]), Convert.ToDouble(parts[2]), Convert.ToDouble(parts[3]), 0, 0, pointsName, 0, 0, 1, 0);                
+            }
+            count = Convert.ToInt32(sR.ReadLine());
+            for (int i = 0; i < count; i++)
+            {
+                radek = sR.ReadLine();
+                parts = radek.Split(' ');
+                TEXT text1 = GetCoordinates(parts[0]);
+                TEXT text2 = GetCoordinates(parts[1]);
+                addLine(text1.x, text1.y, text1.z, text2.x, text2.y, text2.z, breaklineName, 5, 0);                
+            }
+            count = Convert.ToInt32(sR.ReadLine());
+            for (int i = 0; i < count; i++)
+            {
+                radek = sR.ReadLine();
+                parts = radek.Split(' ');
+                TEXT text1 = GetCoordinates(parts[0]);
+                TEXT text2 = GetCoordinates(parts[1]);
+                TEXT text3 = GetCoordinates(parts[2]);
+                addLine(text1.x, text1.y, text1.z, text2.x, text2.y, text2.z, triangleName, 1, 0);
+                addLine(text2.x, text2.y, text2.z, text3.x, text3.y, text3.z, triangleName, 1, 0);
+                addLine(text3.x, text3.y, text3.z, text1.x, text1.y, text1.z, triangleName, 1, 0);
+            }
+        }
+
+
     }
 }

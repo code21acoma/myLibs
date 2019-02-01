@@ -8,33 +8,32 @@ using AFunc;
 
 namespace DTM
 {
-    public class DTM
+    public class POINT
     {
-        public class POINT
-        {
-            public string cislo { get; set; }
-            public double x { get; set; }
-            public double y { get; set; }
-            public double z { get; set; }
-        }
-        
-        List<POINT> points = new List<POINT>();
+        public string cislo { get; set; }
+        public double x { get; set; }
+        public double y { get; set; }
+        public double z { get; set; }
+    }
 
-        public class LINE
-        {
-            public string startPoint { get; set; }
-            public string endPoint { get; set; }
-        }
-        
-        List<LINE> lines = new List<LINE>();
+    public class LINE
+    {
+        public string startPoint { get; set; }
+        public string endPoint { get; set; }
+    }
 
-        public class TRIANGLE
-        {            
-            public string point1 { get; set; }
-            public string point2 { get; set; }
-            public string point3 { get; set; }
-        }
+    public class TRIANGLE
+    {
+        public string point1 { get; set; }
+        public string point2 { get; set; }
+        public string point3 { get; set; }
+    }
 
+   
+    public class DTM
+    {               
+        List<POINT> points = new List<POINT>();                
+        List<LINE> lines = new List<LINE>();        
         List<TRIANGLE> triangles = new List<TRIANGLE>();
 
         /// <summary>
@@ -206,7 +205,7 @@ namespace DTM
 
         }
       
-        public void ImportTrianglesFromPoly(string file)
+        public void ImportTrianglesFromEle(string file)
         {
             string[] parts;
             StreamReader sR = new StreamReader(file);
@@ -229,29 +228,154 @@ namespace DTM
 
         }
 
+        /// <summary>
+        /// Delaunay triangulation 2D
+        /// </summary>
+        /// <param name="outputFile">Output file</param>
         public void Triangulate(string outputFile)
         {
             // SavePolyFile -> Triangle64.exe -> ELE file -> Triangles
-            string polyFile = outputFile.Replace(".dmt", ".poly");
-            SavePolyFile(polyFile);
-            //Process.Start("triangle64 -PN " + polyFile);   
+            string polyFile = outputFile.Replace(".dtm", ".poly");
+            SavePolyFile(polyFile);            
             string exeFile = "triangle64.exe";
-            string parameter = "-PN " + polyFile;
+            string parameter = "" + polyFile;
             AFunc.AFunc.LaunchCommandLineApp(exeFile, parameter);            
-            string eleFile = outputFile.Replace(".dmt", "") + ".1.ele";
-            ImportTrianglesFromPoly(eleFile);            
+            string eleFile = outputFile.Replace(".dtm", "") + ".1.ele";            
+            ImportTrianglesFromEle(eleFile);            
         }
 
-        public void ExportTriangles()
+        /// <summary>
+        /// Export DMT - points, breaklines, triangles
+        /// </summary>
+        /// <param name="file">Output file *.dtm</param>
+        public void ExportDTM(string file)
+        {            
+            StreamWriter sW = new StreamWriter(file);
+            sW.WriteLine(points.Count);
+            foreach (POINT point in points)
+            {
+                sW.WriteLine(point.cislo + " " + point.y + " " + point.x + " " + point.z);
+            }
+            sW.WriteLine(lines.Count);
+            foreach (LINE line in lines)
+            {
+                sW.WriteLine(line.startPoint + " " + line.endPoint);
+            }
+            sW.WriteLine(triangles.Count);
+            foreach (TRIANGLE triangle in triangles)
+            {
+                sW.WriteLine(triangle.point1 + " " + triangle.point2 + " " + triangle.point3);
+            }
+            sW.Close();
+        }
+       
+    }
+
+    public class CompareDTM
+    {
+        List<POINT> points1 = new List<POINT>();
+        List<POINT> points2 = new List<POINT>();
+        List<LINE> lines1 = new List<LINE>();
+        List<LINE> lines2 = new List<LINE>();
+        List<TRIANGLE> triangles1 = new List<TRIANGLE>();
+        List<TRIANGLE> triangles2 = new List<TRIANGLE>();
+
+        CompareDTM() { }
+
+        CompareDTM(string file1, string file2)
         {
-            // Export triangles, then send to Viewer2D
+            ImportDTMs(file1, file2);
         }
 
+        public void ImportDTMs(string file1, string file2)
+        {
+            string radek;
+            string[] parts;
 
-        
+            // File1 - DTM1
+            StreamReader sR1 = new StreamReader(file1);
+            int count = Convert.ToInt32(sR1.ReadLine());
+            for (int i = 0; i < count; i++)
+            {
+                radek = sR1.ReadLine();
+                parts = radek.Split(' ');
+                POINT point = new POINT();
+                point.cislo = parts[0];
+                point.y = Convert.ToDouble(parts[1]);
+                point.x = Convert.ToDouble(parts[2]);
+                point.z = Convert.ToDouble(parts[3]);
+                points1.Add(point);
+            }
+
+            count = Convert.ToInt32(sR1.ReadLine());
+            for (int i = 0; i < count; i++)
+            {
+                radek = sR1.ReadLine();
+                parts = radek.Split(' ');
+                LINE line = new LINE();                
+                line.startPoint = parts[0];
+                line.endPoint = parts[1];
+                lines1.Add(line);
+            }
+
+            count = Convert.ToInt32(sR1.ReadLine());
+            for (int i = 0; i < count; i++)
+            {
+                radek = sR1.ReadLine();
+                parts = radek.Split(' ');
+                TRIANGLE triangle = new TRIANGLE();
+                triangle.point1 = parts[0];
+                triangle.point2 = parts[1];
+                triangle.point3 = parts[2];
+                triangles1.Add(triangle);
+            }
+
+            sR1.Close();
 
 
+            // File2 - DTM2
+            StreamReader sR2 = new StreamReader(file2);
+            count = Convert.ToInt32(sR2.ReadLine());
+            for (int i = 0; i < count; i++)
+            {
+                radek = sR2.ReadLine();
+                parts = radek.Split(' ');
+                POINT point = new POINT();
+                point.cislo = parts[0];
+                point.y = Convert.ToDouble(parts[1]);
+                point.x = Convert.ToDouble(parts[2]);
+                point.z = Convert.ToDouble(parts[3]);
+                points2.Add(point);
+            }
 
+            count = Convert.ToInt32(sR2.ReadLine());
+            for (int i = 0; i < count; i++)
+            {
+                radek = sR2.ReadLine();
+                parts = radek.Split(' ');
+                LINE line = new LINE();
+                line.startPoint = parts[0];
+                line.endPoint = parts[1];
+                lines2.Add(line);
+            }
+
+            count = Convert.ToInt32(sR2.ReadLine());
+            for (int i = 0; i < count; i++)
+            {
+                radek = sR2.ReadLine();
+                parts = radek.Split(' ');
+                TRIANGLE triangle = new TRIANGLE();
+                triangle.point1 = parts[0];
+                triangle.point2 = parts[1];
+                triangle.point3 = parts[2];
+                triangles2.Add(triangle);
+            }
+
+            sR2.Close();
+
+
+        }
 
     }
+
 }

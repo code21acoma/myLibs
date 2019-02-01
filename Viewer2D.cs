@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
+using System.IO;
 using DXF;
 //using System.Drawing.Drawing2D;
 
@@ -19,6 +20,7 @@ namespace Viewer2DTest
             public string cislo { get; set; }
             public double x { get; set; }
             public double y { get; set; }
+            public string layer { get; set; }
         }
 
         //POINT bod;
@@ -36,6 +38,7 @@ namespace Viewer2DTest
         {
             public string startPoint { get; set; }
             public string endPoint { get; set; }
+            public string layer { get; set; }
         }
 
         //LINE line;
@@ -178,7 +181,7 @@ namespace Viewer2DTest
             double okrajY = ((maxY - minY) - (image_width / MERITKO)) / 2;                       
             centerY = maxY - okrajY;
 
-            DrawAll();
+            DrawAll(true);
         }
 
         /// <summary>
@@ -187,7 +190,7 @@ namespace Viewer2DTest
         public void PosunNahoru(double par)
         {            
             centerX = centerX - par;
-            DrawAll();
+            DrawAll(true);
         }
 
         /// <summary>
@@ -196,7 +199,7 @@ namespace Viewer2DTest
         public void PosunDolu(double par)
         {            
             centerX = centerX + par;
-            DrawAll();
+            DrawAll(true);
         }
 
         /// <summary>
@@ -205,7 +208,7 @@ namespace Viewer2DTest
         public void PosunDoleva(double par)
         {            
             centerY = centerY + par;
-            DrawAll();
+            DrawAll(true);
         }
 
         /// <summary>
@@ -214,7 +217,7 @@ namespace Viewer2DTest
         public void PosunDoprava(double par)
         {            
             centerY = centerY - par;
-            DrawAll();
+            DrawAll(true);
         }
 
 
@@ -226,7 +229,7 @@ namespace Viewer2DTest
             double pom;            
             pom = Convert.ToDouble(MERITKO) / (1 + (2 * Convert.ToDouble(par)));
             MERITKO = Convert.ToInt32(pom);
-            DrawAll();
+            DrawAll(true);
         }
 
         /// <summary>
@@ -237,7 +240,7 @@ namespace Viewer2DTest
             double pom;            
             pom = Convert.ToDouble(MERITKO) * (1 + (2 * Convert.ToDouble(par)));
             MERITKO = Convert.ToInt32(pom);
-            DrawAll();
+            DrawAll(true);
         }
 
         public void ResizePictureBox(int width, int height)
@@ -272,12 +275,12 @@ namespace Viewer2DTest
         }
 
         public void AddPoint(string layer, string cislo, double y, double x)
-        {
-            // doplnit vrstvu - 
+        {            
             POINT point = new POINT();
             point.cislo = cislo;
             point.x = x;
             point.y = y;
+            point.layer = layer;
             points.Add(point);
         }
 
@@ -295,11 +298,11 @@ namespace Viewer2DTest
         }
 
         public void AddLine(string layer, string startPoint, string endPoint)
-        {
-            // doplnit vrstvu
+        {            
             LINE line = new LINE();
             line.startPoint = startPoint;
             line.endPoint = endPoint;
+            line.layer = layer;
             lines.Add(line);
         }
 
@@ -308,12 +311,49 @@ namespace Viewer2DTest
             lines.Clear();
         }
 
+        public void ClearAll()
+        {
+            ClearAllLines();
+            ClearAllLines();
+        }
+
 
 
         // ---------------------------------------------------------------------------
         // Vykreslení dat
         //----------------------------------------------------------------------------
         
+        private Color GetColorByLayer(string layerName)
+        {
+            Color color = new Color();
+            foreach (LAYER layer in layers)
+            {
+                if (layer.name == layerName)
+                {
+                    color = layer.color;
+                    return color;
+                }               
+            }
+            color = Color.Green;
+            return color;
+        }
+
+        private Font GetFontByLayer(string layerName)
+        {
+            Font font;
+            foreach (LAYER layer in layers)
+            {
+                if (layer.name == layerName)
+                {
+                    font = layer.font;
+                    return font;
+                }
+            }
+            font = new Font("Arial", 8);
+            return font;
+        }
+
+
         public void DrawLines(Pen pero)
         {                                            
             POINT startPoint, endPoint;
@@ -331,6 +371,45 @@ namespace Viewer2DTest
             pB.Image = bmp;            
         }
 
+        public void DrawLines()
+        {            
+            POINT startPoint, endPoint;
+            POINTc startPointc, endPointc;
+
+            foreach (LINE line in lines)
+            {
+                Pen pero1 = new Pen(GetColorByLayer(line.layer), 1);
+                startPoint = FindPoint(line.startPoint);
+                endPoint = FindPoint(line.endPoint);
+                startPointc = zobrazeni(startPoint);
+                endPointc = zobrazeni(endPoint);
+                g.DrawLine(pero1, startPointc.x, startPointc.y, endPointc.x, endPointc.y);
+            }
+
+            pB.Image = bmp;
+        }
+
+        public void DrawLines(string layerName)
+        {
+            POINT startPoint, endPoint;
+            POINTc startPointc, endPointc;
+
+            foreach (LINE line in lines)
+            {
+                if (line.layer == layerName)
+                {
+                    Pen pero1 = new Pen(GetColorByLayer(line.layer), 1);
+                    startPoint = FindPoint(line.startPoint);
+                    endPoint = FindPoint(line.endPoint);
+                    startPointc = zobrazeni(startPoint);
+                    endPointc = zobrazeni(endPoint);
+                    g.DrawLine(pero1, startPointc.x, startPointc.y, endPointc.x, endPointc.y);
+                }
+            }
+
+            pB.Image = bmp;
+        }
+
 
         public void DrawNumbers(Brush brush, Font font)
         {
@@ -338,7 +417,22 @@ namespace Viewer2DTest
             foreach (POINT point in points)
             {
                 pointc = zobrazeni(point);
-                g.DrawString(point.cislo.ToString(), font, brush, pointc.x, pointc.y);                
+                SolidBrush brush1 = new SolidBrush(GetColorByLayer(point.layer));
+                g.DrawString(point.cislo.ToString(), font, brush1, pointc.x, pointc.y);                
+            }
+
+            pB.Image = bmp;
+        }
+
+        public void DrawNumbers()
+        {
+            POINTc pointc;
+            foreach (POINT point in points)
+            {
+                pointc = zobrazeni(point);
+                SolidBrush brush1 = new SolidBrush(GetColorByLayer(point.layer));
+                Font font1 = GetFontByLayer(point.layer);
+                g.DrawString(point.cislo.ToString(), font1, brush1, pointc.x, pointc.y);
             }
 
             pB.Image = bmp;
@@ -350,8 +444,21 @@ namespace Viewer2DTest
             POINTc pointc;
             foreach (POINT point in points)
             {
-                pointc = zobrazeni(point);
+                pointc = zobrazeni(point);                
                 g.DrawEllipse(pero, pointc.x - 2, pointc.y - 2, 4, 4);                
+            }
+
+            pB.Image = bmp;
+        }
+
+        public void DrawPoint()
+        {
+            POINTc pointc;
+            foreach (POINT point in points)
+            {
+                pointc = zobrazeni(point);
+                Pen pero1 = new Pen(GetColorByLayer(point.layer), 1);
+                g.DrawEllipse(pero1, pointc.x - 2, pointc.y - 2, 4, 4);
             }
 
             pB.Image = bmp;
@@ -365,10 +472,82 @@ namespace Viewer2DTest
             DrawLines(peroBlue);
             DrawPoint(peroRed);
         }
-        
-        public void ImportDTM(List<string> pointsX, List<string> lines, List<string> triangles)
+
+        public void DrawAll(bool layerOK)
         {
-            // Import triangles from DTM
+            g = Graphics.FromImage(bmp);
+            g.Clear(Color.White);
+            DrawNumbers();
+            DrawLines();
+            DrawPoint();
+        }
+
+
+
+        /// <summary>
+        /// Import triangles from DTM
+        /// </summary>
+        /// <param name="file">Input file *.dtm</param>
+        public void ImportDTM(string file)
+        {
+            string pointsName = "points";
+            string breaklineName = "breaklines";
+            string triangleName = "triangles";
+            Font drawFont8 = new Font("Arial", 8);
+            LAYER layer = new LAYER();
+            layer.name = pointsName;
+            layer.font = drawFont8;
+            layer.color = Color.Black;
+            layers.Add(layer);
+            layer = new LAYER();
+            layer.name = breaklineName;
+            layer.font = drawFont8;
+            layer.color = Color.Blue;
+            layers.Add(layer);
+            layer = new LAYER();
+            layer.name = triangleName;
+            layer.font = drawFont8;
+            layer.color = Color.Red;
+            layers.Add(layer);
+
+            string radek;
+            string[] parts;
+            
+            StreamReader sR = new StreamReader(file);
+            int count = Convert.ToInt32(sR.ReadLine());
+            for (int i = 0; i < count; i++)
+            {
+                radek = sR.ReadLine();
+                parts = radek.Split(' ');
+                AddPoint(pointsName, parts[0], Convert.ToDouble(parts[1]), Convert.ToDouble(parts[2]));                
+            }
+            count = Convert.ToInt32(sR.ReadLine());
+            for (int i = 0; i < count; i++)
+            {
+                radek = sR.ReadLine();
+                parts = radek.Split(' ');
+                AddLine(breaklineName, parts[0], parts[1]);
+            }
+            count = Convert.ToInt32(sR.ReadLine());
+            for (int i = 0; i < count; i++)
+            {
+                radek = sR.ReadLine();
+                parts = radek.Split(' ');
+                AddLine(triangleName, parts[0], parts[1]);
+                AddLine(triangleName, parts[1], parts[2]);
+                AddLine(triangleName, parts[2], parts[0]);
+            }
+        }
+
+
+        public void ExportLines(string file)
+        {
+            StreamWriter sW = new StreamWriter(file);
+            foreach (LINE line in lines)
+            {
+                sW.WriteLine(line.startPoint + " " + line.endPoint);
+            }
+            sW.Close();
         }
 
     }
