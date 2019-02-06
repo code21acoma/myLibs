@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace ScanEdit
+namespace AnalyticGeometry
 {
     class AnalyticGeometry
     {
@@ -270,7 +270,11 @@ namespace ScanEdit
         public double getDistancePointFromPlane(double[] pointA, double[] plane)
         {
             double up = (plane[0] * pointA[0]) + (plane[1] * pointA[1]) + (plane[2] * pointA[2]) + plane[3];
-            double down = Math.Sqrt((plane[0] * plane[0]) + (plane[1] * plane[1]) + (plane[2] * plane[2]));            
+            double down = Math.Sqrt((plane[0] * plane[0]) + (plane[1] * plane[1]) + (plane[2] * plane[2]));  
+            if (down == 0) // vodorovna rovina
+            {
+                return pointA[2] - plane[3];
+            }
             return up/down;
         }
 
@@ -318,6 +322,22 @@ namespace ScanEdit
             
             return pointL;
         }
+
+        /// <summary>
+        /// Vypočte průsečík přímky a roviny
+        /// </summary>
+        /// <param name="plane">obecná rovnice roviny</param>
+        /// <param name="line">parametrická rovnice přímky</param>
+        /// <returns>intersection point</returns>
+        public double[] getLineAndPlaneIntersection(double[] plane, double[,] line)
+        {            
+            double up = -(plane[0] * line[0, 0]) - (plane[1] * line[1, 0]) - (plane[2] * line[2, 0]) - plane[3];
+            double down = (plane[0] * line[0, 1]) + (plane[1] * line[1, 1]) + (plane[2] * line[2, 1]);
+            double t = up / down;
+            double[] point = new double[3] { (line[0,0] + (line[0,1] * t)), (line[1, 0] + (line[1, 1] * t)) , (line[2, 0] + (line[2, 1] * t)) };
+            return point;
+        }
+
 
         /// <summary>
         /// Určí, kde leží bod vůči přímce - hodnota > 0 - bod leží vlevo - ve 2D
