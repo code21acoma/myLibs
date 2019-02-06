@@ -120,7 +120,7 @@ namespace GA_test
             List<POINT> konvexBoundary = new List<POINT>();
             
             konvexBoundary.Add(body[minY]);
-            AnalyticGeometry AG = new AnalyticGeometry();
+            AnalyticGeometry.AnalyticGeometry AG = new AnalyticGeometry.AnalyticGeometry();
 
             int p = 1000;
             double minVectorAngle = 500;
@@ -130,7 +130,7 @@ namespace GA_test
             double[] bod2 = new double[] { 0, 0, 0 };
             double[] bod3 = new double[3];
             double[] vectorStart = new double[3];
-            vectorStart = AG.getVector(bod1, bod2);
+            vectorStart = AG.GetVector(bod1, bod2);
             bod1 = new double[] { body[minY].y, body[minY].x, 0 };
             
             for (int i = 0; i < body.Count(); i++)
@@ -138,8 +138,8 @@ namespace GA_test
                 if (i != minY)
                 {
                     bod2 = new double[] { body[i].y, body[i].x, 0 };
-                    double[] vector = AG.getVector(bod1, bod2);
-                    double vectorAngle = AG.VectorAngle(vectorStart, vector);
+                    double[] vector = AG.GetVector(bod1, bod2);
+                    double vectorAngle = AG.GetVectorAngle(vectorStart, vector);
                     if (vectorAngle < minVectorAngle)
                     {
                         minVectorAngle = vectorAngle;
@@ -161,15 +161,15 @@ namespace GA_test
                 bod1 = new double[] { konvexBoundary[konvexBoundary.Count - 2].y, konvexBoundary[konvexBoundary.Count - 2].x, 0 };
                 bod2 = new double[] { konvexBoundary[konvexBoundary.Count - 1].y, konvexBoundary[konvexBoundary.Count - 1].x, 0 };
                 vectorStart = new double[3];
-                vectorStart = AG.getVector(bod1, bod2);
+                vectorStart = AG.GetVector(bod1, bod2);
 
                 for (int i = 0; i < body.Count(); i++)
                 {
                     if ((bod2[0] != body[i].y) && (bod2[2] != body[i].x))
                     {
                         bod3 = new double[] { body[i].y, body[i].x, 0 };
-                        double[] vector = AG.getVector(bod2, bod3);
-                        double vectorAngle = AG.VectorAngle(vectorStart, vector);
+                        double[] vector = AG.GetVector(bod2, bod3);
+                        double vectorAngle = AG.GetVectorAngle(vectorStart, vector);
                         if (vectorAngle < minVectorAngle)
                         {
                             minVectorAngle = vectorAngle;

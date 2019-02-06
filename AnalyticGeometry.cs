@@ -21,7 +21,7 @@ namespace AnalyticGeometry
         /// <param name="point1">bod 1</param>
         /// <param name="point2">bod 2</param>
         /// <returns>vektor</returns>
-        public double[] getVector(double[] point1, double[] point2)
+        public double[] GetVector(double[] point1, double[] point2)
         {
             double[] vector = new double[3];
             vector[0] = point2[0] - point1[0];
@@ -35,7 +35,7 @@ namespace AnalyticGeometry
         /// </summary>
         /// <param name="vector">vektor</param>
         /// <returns></returns>
-        public double[] getNegativeVector(double[] vector)
+        public double[] GetNegativeVector(double[] vector)
         {
             double[] vectorN = new double[3];
             vectorN[0] = -vector[0];
@@ -44,7 +44,7 @@ namespace AnalyticGeometry
             return vectorN;
         }
 
-        public double[] getRightVector(double[] vector)
+        public double[] GetRightVector(double[] vector)
         {
             double[] vectorN = new double[3];
             vectorN[0] = vector[1];
@@ -58,12 +58,12 @@ namespace AnalyticGeometry
         /// </summary>
         /// <param name="vector">vektor</param>
         /// <returns></returns>
-        public double[] getNormVector(double[] vector)
+        public double[] GetNormVector(double[] vector)
         {
             double[] vectorN = new double[3];
-            vectorN[0] = vector[0] / VectorLength(vector);
-            vectorN[1] = vector[1] / VectorLength(vector);
-            vectorN[2] = vector[2] / VectorLength(vector);
+            vectorN[0] = vector[0] / GetVectorLength(vector);
+            vectorN[1] = vector[1] / GetVectorLength(vector);
+            vectorN[2] = vector[2] / GetVectorLength(vector);
             return vectorN;
         }
 
@@ -73,7 +73,7 @@ namespace AnalyticGeometry
         /// <param name="vector">vektor</param>
         /// <param name="multiple">zvětšení</param>
         /// <returns></returns>
-        public double[] getExpandVector(double[] vector, double multiple)
+        public double[] GetExpandVector(double[] vector, double multiple)
         {
             double[] vectorN = new double[3];
             vectorN[0] = vector[0] * multiple;
@@ -87,7 +87,7 @@ namespace AnalyticGeometry
         /// </summary>
         /// <param name="vector">vstupní vektor</param>
         /// <returns>dimense vektoru</returns>
-        public int getVectorDimension(double[] vector)
+        public int GetVectorDimension(double[] vector)
         {
             return vector.Length;
         }
@@ -98,7 +98,7 @@ namespace AnalyticGeometry
         /// </summary>
         /// <param name="vector">vstupní vektor</param>
         /// <returns>délka vektoru</returns>
-        public double VectorLength(double[] vector)
+        public double GetVectorLength(double[] vector)
         {            
             return Math.Sqrt((vector[0] * vector[0]) + (vector[1] * vector[1]) + (vector[2] * vector[2]));
         }
@@ -109,13 +109,13 @@ namespace AnalyticGeometry
         /// <param name="point1">bod 1</param>
         /// <param name="point2">bod 2</param>
         /// <returns>délka mezi body</returns>
-        public double VectorLength(double[] point1, double[] point2)
+        public double GetVectorLength(double[] point1, double[] point2)
         {
             return Math.Sqrt(((point2[0] - point1[0]) * (point2[0] - point1[0])) + ((point2[1] - point1[1]) * (point2[1] - point1[1])) + ((point2[2] - point1[2]) * (point2[2] - point1[2])));
         }
 
 
-        public double[] getRajon(double bearing, double length)
+        public double[] GetRajon(double bearing, double length)
         {
             double[] dx = new double[3] ;
             dx[0] = length * Math.Sin(bearing);
@@ -124,7 +124,7 @@ namespace AnalyticGeometry
             return dx;
         }
 
-        public double[] getRajon(double[] point, double[] vector)
+        public double[] GetRajon(double[] point, double[] vector)
         {
             double[] coo = new double[3];
             coo[0] = point[0] + vector[0];
@@ -165,9 +165,9 @@ namespace AnalyticGeometry
         /// <param name="vector1">vektor 1</param>
         /// <param name="vector2">vektor 2</param>
         /// <returns>úhel ve stupních</returns>
-        public double VectorAngle(double[] vector1, double[] vector2)
+        public double GetVectorAngle(double[] vector1, double[] vector2)
         {
-            double p = ScalarProduct(vector1, vector2) / (VectorLength(vector1) * VectorLength(vector2));
+            double p = ScalarProduct(vector1, vector2) / (GetVectorLength(vector1) * GetVectorLength(vector2));
             if (p > 1) p = 1;  // osetreni zaokrouhleni, nelze delat Math.Acos(1.00000000001)  !!!!!
             if (p < -1) p = -1;
             return Math.Acos(p) * 180 / Math.PI;
@@ -180,13 +180,13 @@ namespace AnalyticGeometry
         /// <param name="point1">bod 1</param>
         /// <param name="point2">bod 2</param>
         /// <returns>parametrická rovnice přímky</returns>
-        public double[,] getLineParametricEquation(double[] point1, double[] point2)
+        public double[,] GetLineParametricEquation(double[] point1, double[] point2)
         {
             // x = A1 + a1*t
             // y = A2 + a2*t
             // z = A3 + a3*t
             double[] vector = new double[3];
-            vector = getVector(point1, point2);
+            vector = GetVector(point1, point2);
             double[,] lineParametric = new double[3,2];
             lineParametric = new double[,] { { point1[0], vector[0] }, { point1[1], vector[1] }, { point1[2], vector[2] } };
             return lineParametric;
@@ -200,7 +200,7 @@ namespace AnalyticGeometry
         /// <param name="point2">bod2</param>
         /// <param name="point3">bod3</param>
         /// <returns></returns>
-        public double[,] getPlaneParametricEquation(double[] point1, double[] point2, double[] point3)
+        public double[,] GetPlaneParametricEquation(double[] point1, double[] point2, double[] point3)
         {
             // x = A1 + u1*t + v1*s
             // y = A2 + u2*t + v2*s
@@ -217,13 +217,13 @@ namespace AnalyticGeometry
         /// <param name="point2">bod2</param>
         /// <param name="point3">bod3</param>
         /// <returns></returns>
-        public double[] getPlaneEquation(double[] point1, double[] point2, double[] point3)
+        public double[] GetPlaneEquation(double[] point1, double[] point2, double[] point3)
         {            
             // ax + by + cz + d = 0    - parametry a,b,c,d
             double[] vector1 = new double[3]; // u = B - A
-            vector1 = getVector(point1, point2);            
+            vector1 = GetVector(point1, point2);            
             double[] vector2 = new double[3]; // v = C - A
-            vector2 = getVector(point1, point3);            
+            vector2 = GetVector(point1, point3);            
             double[] vector3 = new double[3];
             vector3 = VectorialProduct(vector1, vector2);            
 
@@ -243,7 +243,7 @@ namespace AnalyticGeometry
         /// <param name="pointA">bod A</param>
         /// <param name="lineParametric">parametrická rovnice přímky</param>
         /// <returns>vzdálenost bodu od přímky</returns>
-        public double getDistancePointFromLine(double[] pointA, double[,] lineParametric)
+        public double GetDistancePointFromLine(double[] pointA, double[,] lineParametric)
         {
             double[] vectorP = new double[3]; // směrový vektor přímky p - z parametrické rovnice přímky
             vectorP[0] = lineParametric[0, 1];
@@ -257,7 +257,7 @@ namespace AnalyticGeometry
             vectorA[0] = pointA[0] - pointP[0];
             vectorA[1] = pointA[1] - pointP[1];
             vectorA[2] = pointA[2] - pointP[2];
-            return (VectorLength(VectorialProduct(vectorP, vectorA)) / VectorLength(vectorP));
+            return (GetVectorLength(VectorialProduct(vectorP, vectorA)) / GetVectorLength(vectorP));
         }
 
 
@@ -267,7 +267,7 @@ namespace AnalyticGeometry
         /// <param name="pointA">bod A</param>
         /// <param name="plane">obecná rovnice roviny</param>
         /// <returns></returns>
-        public double getDistancePointFromPlane(double[] pointA, double[] plane)
+        public double GetDistancePointFromPlane(double[] pointA, double[] plane)
         {
             double up = (plane[0] * pointA[0]) + (plane[1] * pointA[1]) + (plane[2] * pointA[2]) + plane[3];
             double down = Math.Sqrt((plane[0] * plane[0]) + (plane[1] * plane[1]) + (plane[2] * plane[2]));  
@@ -311,34 +311,18 @@ namespace AnalyticGeometry
             double[] vector2 = new double[3];
             double[] vector3 = new double[3];
             double[] vectorP = new double[3];
-            vector1 = getVector(point1, point2);
-            vector2 = getVector(point1, pointP);
+            vector1 = GetVector(point1, point2);
+            vector2 = GetVector(point1, pointP);
             vector3 = VectorialProduct(vector1, vector2);
             vectorP = VectorialProduct(vector1, vector3);
             double[,] lineParametric = new double[3, 2];
-            lineParametric = getLineParametricEquation(point1, point2);
-            double kolmice = getDistancePointFromLine(pointP, lineParametric);
-            pointL = getRajon(pointP, getExpandVector(getNormVector(vectorP), kolmice));
+            lineParametric = GetLineParametricEquation(point1, point2);
+            double kolmice = GetDistancePointFromLine(pointP, lineParametric);
+            pointL = GetRajon(pointP, GetExpandVector(GetNormVector(vectorP), kolmice));
             
             return pointL;
         }
-
-        /// <summary>
-        /// Vypočte průsečík přímky a roviny
-        /// </summary>
-        /// <param name="plane">obecná rovnice roviny</param>
-        /// <param name="line">parametrická rovnice přímky</param>
-        /// <returns>intersection point</returns>
-        public double[] getLineAndPlaneIntersection(double[] plane, double[,] line)
-        {            
-            double up = -(plane[0] * line[0, 0]) - (plane[1] * line[1, 0]) - (plane[2] * line[2, 0]) - plane[3];
-            double down = (plane[0] * line[0, 1]) + (plane[1] * line[1, 1]) + (plane[2] * line[2, 1]);
-            double t = up / down;
-            double[] point = new double[3] { (line[0,0] + (line[0,1] * t)), (line[1, 0] + (line[1, 1] * t)) , (line[2, 0] + (line[2, 1] * t)) };
-            return point;
-        }
-
-
+      
         /// <summary>
         /// Určí, kde leží bod vůči přímce - hodnota > 0 - bod leží vlevo - ve 2D
         /// </summary>
@@ -346,7 +330,7 @@ namespace AnalyticGeometry
         /// <param name="point2">bod2 přímky</param>
         /// <param name="pointA">bod A</param>
         /// <returns>hodnota</returns>
-        public double getPositionOnLine(double[] point1, double[] point2, double[] pointA)
+        public double GetPositionOnLine(double[] point1, double[] point2, double[] pointA)
         {
             return ((point2[0] - point1[0]) * (pointA[1] - point1[1])) - ((pointA[0] - point1[0]) * (point2[1] - point1[1]));
         }
@@ -358,7 +342,7 @@ namespace AnalyticGeometry
         /// <param name="lineParametric1">parametrická rovnice přímky 1</param>
         /// <param name="lineParametric2">parametrická rovnice přímky 2</param>
         /// <returns>průsečík dvou přímek ve 2D</returns>
-        public double[] getLinesIntersectionPoint(double[,] lineParametric1, double[,] lineParametric2)
+        public double[] GetLinesIntersectionPoint(double[,] lineParametric1, double[,] lineParametric2)
         {            
             double[,] A = new double[2,2];
             A[0, 0] = lineParametric1[0, 1];
@@ -381,11 +365,50 @@ namespace AnalyticGeometry
             double[] coo = new double[3];
             coo[0] = lineParametric1[0, 0] + lineParametric1[0, 1] * x[0];
             coo[1] = lineParametric1[1, 0] + lineParametric1[1, 1] * x[0];
-
-           //using (StreamWriter stream = File.AppendText("log2.txt"))                                               
+                                                       
             return coo;
         }
 
+        /// <summary>
+        /// Vypočte průsečík přímky a roviny
+        /// </summary>
+        /// <param name="plane">obecná rovnice roviny</param>
+        /// <param name="line">parametrická rovnice přímky</param>
+        /// <returns>intersection point</returns>
+        public double[] GetLineAndPlaneIntersection(double[] plane, double[,] line)
+        {
+            double up = -(plane[0] * line[0, 0]) - (plane[1] * line[1, 0]) - (plane[2] * line[2, 0]) - plane[3];
+            double down = (plane[0] * line[0, 1]) + (plane[1] * line[1, 1]) + (plane[2] * line[2, 1]);
+            double t = up / down;
+            double[] point = new double[3] { (line[0, 0] + (line[0, 1] * t)), (line[1, 0] + (line[1, 1] * t)), (line[2, 0] + (line[2, 1] * t)) };
+            return point;
+        }
+
+        /// <summary>
+        /// Zjistí, zda je průsečík dvou přímek na vyšetřované úsečce A1-B1
+        /// </summary>
+        /// <param name="pointA1"></param>
+        /// <param name="pointB1"></param>
+        /// <param name="pointA2"></param>
+        /// <param name="pointB2"></param>
+        /// <returns>true or false</returns>
+        public bool IsOnLineSegment(double[] pointA1, double[] pointB1, double[] pointA2, double[] pointB2)
+        {
+            bool isOnLine = false;
+            double lineSegmentDistance = GetVectorLength(pointA1, pointB1);
+            double[] vector1 = GetVector(pointA1, pointB1);
+            double[] vector2 = GetVector(pointA2, pointB2);
+            double[,] line1 = GetLineParametricEquation(pointA1, pointB1);
+            double[,] line2 = GetLineParametricEquation(pointA2, pointB2);
+            double[] intersectionPoint = GetLinesIntersectionPoint(line1, line2);
+            double[] vector = GetVector(intersectionPoint, pointB1);
+            double distance = GetVectorLength(intersectionPoint, pointB1);
+            if (distance == 0) return true;
+            double vectorAngle = GetVectorAngle(vector1, vector);
+            if ((vectorAngle < 1) && (distance <= lineSegmentDistance)) return true;
+
+            return isOnLine;
+        }
 
 
     }
