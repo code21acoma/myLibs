@@ -31,6 +31,39 @@ namespace AnalyticGeometry
         }
 
         /// <summary>
+        /// Vypočítá vektor ze směrníku a vzdálenosti
+        /// </summary>        
+        /// <param name="bearing">směrník v gonech</param>
+        /// <param name="distance">délka</param>
+        /// <returns></returns>
+        public double[] GetVector(double bearing, double distance)
+        {
+            double[] vector = new double[3];
+            double dy = distance * Math.Sin(bearing * Math.PI / 200);
+            double dx = distance * Math.Cos(bearing * Math.PI / 200);
+            vector[0] = dy;
+            vector[1] = dx;
+            vector[2] = 0;
+            return vector;
+        }
+
+        /// <summary>
+        /// Vrátí součet dvou vektorů
+        /// </summary>
+        /// <param name="vector1"></param>
+        /// <param name="vector2"></param>
+        /// <returns></returns>
+        public double[] GetSumVector(double[] vector1, double[] vector2)
+        {
+            double[] sum = new double[3];
+            sum[0] = vector1[0] + vector2[0];
+            sum[1] = vector1[1] + vector2[1];
+            sum[2] = vector1[2] + vector2[2];
+            return sum;
+        }
+
+
+        /// <summary>
         /// Vypočítá opačný vektor k danému vektoru
         /// </summary>
         /// <param name="vector">vektor</param>
@@ -81,7 +114,7 @@ namespace AnalyticGeometry
             vectorN[2] = vector[2] * multiple;
             return vectorN;
         }
-                
+
         /// <summary>
         /// Vrátí dimensi vektoru (2 = 2d, 3 = 3d)
         /// </summary>
@@ -99,7 +132,7 @@ namespace AnalyticGeometry
         /// <param name="vector">vstupní vektor</param>
         /// <returns>délka vektoru</returns>
         public double GetVectorLength(double[] vector)
-        {            
+        {
             return Math.Sqrt((vector[0] * vector[0]) + (vector[1] * vector[1]) + (vector[2] * vector[2]));
         }
 
@@ -115,9 +148,15 @@ namespace AnalyticGeometry
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bearing">směrník v radianech</param>
+        /// <param name="length"></param>
+        /// <returns></returns>
         public double[] GetRajon(double bearing, double length)
         {
-            double[] dx = new double[3] ;
+            double[] dx = new double[3];
             dx[0] = length * Math.Sin(bearing);
             dx[1] = length * Math.Cos(bearing);
             dx[2] = 0;
@@ -158,7 +197,7 @@ namespace AnalyticGeometry
             vector3[2] = (vector1[0] * vector2[1]) - (vector2[0] * vector1[1]);
             return vector3;
         }
-                
+
         /// <summary>
         /// Vypočítá úhel mezi dvěma vektory
         /// </summary>
@@ -171,6 +210,19 @@ namespace AnalyticGeometry
             if (p > 1) p = 1;  // osetreni zaokrouhleni, nelze delat Math.Acos(1.00000000001)  !!!!!
             if (p < -1) p = -1;
             return Math.Acos(p) * 180 / Math.PI;
+        }
+
+        /// <summary>
+        /// Vypočítá směrník vektoru v gonech
+        /// </summary>
+        /// <param name="vector">vektor</param>
+        /// <returns>Směrník v gonech</returns>
+        public double GetVectorBearing(double[] vector)
+        {
+            double bearing = Math.Atan2(vector[0], vector[1]) * 200 / Math.PI;
+            while (bearing < 0) bearing = bearing + 400;
+            while (bearing > 400) bearing = bearing - 400;
+            return bearing;
         }
 
 
@@ -191,6 +243,24 @@ namespace AnalyticGeometry
             lineParametric = new double[,] { { point1[0], vector[0] }, { point1[1], vector[1] }, { point1[2], vector[2] } };
             return lineParametric;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="point1"></param>
+        /// <param name="point2"></param>
+        /// <returns></returns>
+        public double[,] GetLineParametricEquationFromPointAndVector(double[] point, double[] vector)
+        {
+            // x = A1 + a1*t
+            // y = A2 + a2*t
+            // z = A3 + a3*t            
+            double[,] lineParametric = new double[3, 2];
+            lineParametric = new double[,] { { point[0], vector[0] }, { point[1], vector[1] }, { point[2], vector[2] } };
+            return lineParametric;
+        }
+
+
 
 
         /// <summary>
@@ -324,7 +394,7 @@ namespace AnalyticGeometry
         }
       
         /// <summary>
-        /// Určí, kde leží bod vůči přímce - hodnota > 0 - bod leží vlevo - ve 2D
+        /// Určí, kde leží bod vůči přímce - hodnota > 0 -> bod leží vlevo - ve 2D
         /// </summary>
         /// <param name="point1">bod1 přímky</param>
         /// <param name="point2">bod2 přímky</param>
@@ -333,6 +403,12 @@ namespace AnalyticGeometry
         public double GetPositionOnLine(double[] point1, double[] point2, double[] pointA)
         {
             return ((point2[0] - point1[0]) * (pointA[1] - point1[1])) - ((pointA[0] - point1[0]) * (point2[1] - point1[1]));
+        }
+
+        public double GetPositionOnLineWithVector(double[] pointOnLine, double[] vectorLine, double[] pointA)
+        {            
+            double[] point2 = GetRajon(pointOnLine, vectorLine);
+            return ((point2[0] - pointOnLine[0]) * (pointA[1] - pointOnLine[1])) - ((pointA[0] - pointOnLine[0]) * (point2[1] - pointOnLine[1]));
         }
 
 
