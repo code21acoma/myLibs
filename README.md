@@ -2,7 +2,9 @@
 C# Libraries<br />
 <li ><b>AES</b> | Encypting / decrypting string and files | symetric block cipher with one key</li>
 <li ><b>AFunc</b> | My most using functions</li>
+<li ><b>Axis</b> | Transformation coordinates on the axis</li>
 <li ><b>AnalyticGeometry</b> | Library for computing in analytic geometry</li>
+<li ><b>Clothoid</b> | Library for clothoid</li>
 <li ><b>DMT</b> | Library for digital terrain model</li>
 <li ><b>DXF</b> | Library for work with dxf files</li>
 <li ><b>GA2D</b> | Library for geometric algoritms</li>
