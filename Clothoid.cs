@@ -143,8 +143,10 @@ namespace Clothoid
             startPoint[2] = 0;
 
             double Lposun = 0;
-            if (Math.Abs(R1) < Math.Abs(R2)) Lposun = CalcLk(A, Math.Abs(R1)) - CalcLk(A, Math.Abs(R2));
-            else Lposun = CalcLk(A, Math.Abs(R2)) - CalcLk(A, Math.Abs(R1));
+            //if (Math.Abs(R1) < Math.Abs(R2)) Lposun = CalcLk(A, Math.Abs(R1)) - CalcLk(A, Math.Abs(R2));
+            //else Lposun = CalcLk(A, Math.Abs(R2)) - CalcLk(A, Math.Abs(R1));
+            if (Math.Abs(R1) < Math.Abs(R2)) Lposun =  CalcLk(A, Math.Abs(R2));
+            else Lposun = CalcLk(A, Math.Abs(R1));
 
             sW.WriteLine("A: " + A);
             sW.WriteLine("Lk: " + Lk);
