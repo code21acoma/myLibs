@@ -116,6 +116,24 @@ namespace AnalyticGeometry
         }
 
         /// <summary>
+        /// Zvětšení / zmenšení vektoru na požadovanou velikost
+        /// </summary>
+        /// <param name="vector">vektor</param>
+        /// <param name="length">velikost</param>
+        /// <returns></returns>
+        public double[] GetExpandVectorToLength(double[] vector, double length)
+        {
+            double vectorLength = GetVectorLength(vector);
+            double multiple = length / vectorLength;
+            double[] vectorN = new double[3];
+            vectorN[0] = vector[0] * multiple;
+            vectorN[1] = vector[1] * multiple;
+            vectorN[2] = vector[2] * multiple;
+            return vectorN;
+        }
+
+
+        /// <summary>
         /// Vrátí dimensi vektoru (2 = 2d, 3 = 3d)
         /// </summary>
         /// <param name="vector">vstupní vektor</param>
