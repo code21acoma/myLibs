@@ -261,16 +261,13 @@ namespace Axis
                         centripetalVector[2] = 0;
                     }
 
-                    centerPoint = AG.GetRajon(startPoint, centripetalVector);
-                    //startVector = new double[] { -centripetalVector[0], -centripetalVector[1], 0 };
-
+                    centerPoint = AG.GetRajon(startPoint, centripetalVector);                    
                     pointVector = AG.GetVector(centerPoint, point);
                     pointBearing = AG.GetVectorBearing(pointVector);
                     startPointVector = AG.GetVector(centerPoint, startPoint);
                     startBearing = AG.GetVectorBearing(startPointVector);
                     endPointVector = AG.GetVector(centerPoint, endPoint);
-                    endBearing = AG.GetVectorBearing(endPointVector);
-                    //pointAngle = AG.GetVectorAngle(startVector, pointVector);
+                    endBearing = AG.GetVectorBearing(endPointVector);                    
 
                     stream.WriteLine("");
                     stream.WriteLine("Parametr osy: " + i);
@@ -291,11 +288,10 @@ namespace Axis
                         if ((pointBearing >= startBearing) && (pointBearing <= endBearing))
                         {
                             validParameter = i;
-                            pointStation = ((pointBearing - startBearing) * Math.PI * axis[i].radius1) / 200;
-                            //stream.WriteLine("pointStation: " + pointStation);
+                            pointStation = ((pointBearing - startBearing) * Math.PI * axis[i].radius1) / 200;                            
                             station = axis[i].station + pointStation;
                             offset = axis[i].radius1 - AG.GetVectorLength(pointVector);
-                            intersectionPoint = AG.GetRajon(centerPoint, pointVector);
+                            intersectionPoint = AG.GetRajon(centerPoint, AG.GetExpandVectorToLength(pointVector, Math.Abs(axis[i].radius1)));
                             bearing = axis[i].bearing + (pointBearing - startBearing);
                             stream.WriteLine("bearing: " + bearing);
                             while (bearing < 0) bearing = bearing + 400;
@@ -328,7 +324,7 @@ namespace Axis
                             stream.WriteLine("pointStation: " + pointStation);
                             station = axis[i].station + pointStation;
                             offset = AG.GetVectorLength(pointVector) - Math.Abs(axis[i].radius1);
-                            intersectionPoint = AG.GetRajon(centerPoint, pointVector);
+                            intersectionPoint = AG.GetRajon(centerPoint, AG.GetExpandVectorToLength(pointVector, Math.Abs(axis[i].radius1)));
                             bearing = axis[i].bearing - (startBearing - pointBearing);
                             stream.WriteLine("axis-bearing: " + axis[i].bearing);
                             stream.WriteLine("startBearing: " + startBearing);
@@ -418,8 +414,7 @@ namespace Axis
                         stream.WriteLine("****** Z PRIME DO OBLOUKU *************");
                         stream.WriteLine("***************************************");
                         A = Math.Sqrt(axis[i].length * Math.Abs(R2));
-                        stream.WriteLine("A: " + A);
-                        //tauK = clot.CalcTau(Lk, Lk, R2);
+                        stream.WriteLine("A: " + A);                        
 
                         double[] tetivaVektor = AG.GetVector(startPoint, endPoint);
                         double[] normalaKtetiveVektor = AG.GetRightVector(tetivaVektor);
@@ -514,8 +509,7 @@ namespace Axis
                         double[,] tetiva = AG.GetLineParametricEquationFromPointAndVector(startPoint, tetivaVektor);
                         double[,] normalaKtetive = AG.GetLineParametricEquationFromPointAndVector(point, normalaKtetiveVektor);
                         double[] tetivaPoint = AG.GetLinesIntersectionPoint(tetiva, normalaKtetive);
-                        l = AG.GetVectorLength(startPoint, tetivaPoint); // přibližná délka přechodnice = délka tětivy
-                        //R = clot.CalcR(A, l);
+                        l = AG.GetVectorLength(startPoint, tetivaPoint); // přibližná délka přechodnice = délka tětivy                        
                         tau = clot.CalcTau(l, Lk, R1) * 200 / Math.PI;
                         double[] yxk = clot.CalcXY(l, Lk, R1);
                         bearing = axis[i + 1].bearing + 200;
@@ -551,8 +545,7 @@ namespace Axis
                             if (diff >= 0) neg = 1;
                             else neg = -1;
                             l = l + (neg * distance); // přibližná délka přechodnice - iterační přiblížení
-                            stream.WriteLine("l: " + l);
-                            //R = clot.CalcR(A, l);
+                            stream.WriteLine("l: " + l);                            
                             tau = clot.CalcTau(l, Lk, R1) * 200 / Math.PI;
                             stream.WriteLine("tau: " + tau);
                             yxk = clot.CalcXY(l, Lk, R1);
@@ -604,8 +597,7 @@ namespace Axis
                     {
                         stream.WriteLine("***************************************");
                         stream.WriteLine("* Z VĚTŠÍHO POLOMĚRU OBLOUKU NA MENŠÍ *");
-                        stream.WriteLine("***************************************");
-                        //A = Math.Sqrt(axis[i].length * Math.Abs(R2));
+                        stream.WriteLine("***************************************");                        
                         A = Math.Sqrt((Math.Abs(R1) * Math.Abs(R2) * axis[i].length) / Math.Abs(R1 - R2));
                         stream.WriteLine("A: " + A);
                         var result1 = clot.CalcStartPoint(startPoint, endPoint, R1, R2, axis[i].length, axis[i].bearing);
@@ -665,8 +657,7 @@ namespace Axis
                             stream.WriteLine("distanc: " + distance);
                             stream.WriteLine("l: " + l);
 
-                            validParameter = i;
-                            //station = axis[i].station + l;                            
+                            validParameter = i;                            
                             station = axis[i].station - Lposun + l;
                             double pos = AG.GetPositionOnLineWithVector(pointK, tangentKvector, point);
                             if (pos <= 0) neg = 1;
@@ -702,8 +693,7 @@ namespace Axis
                         stream.WriteLine("* Z MENŠÍHO POLOMĚRU OBLOUKU NA VĚTŠÍ *");
                         stream.WriteLine("***************************************");
                         R1 = -R1;   // klotoida jde z opačné strany, musí mít opačné znaménko, stáčí se opačným směrem
-                        R2 = -R2;
-                        //A = Math.Sqrt(axis[i].length * Math.Abs(R1));
+                        R2 = -R2;                        
                         A = Math.Sqrt((Math.Abs(R1) * Math.Abs(R2) * axis[i].length) / Math.Abs(R1 - R2));
                         stream.WriteLine("A: " + A);
                         double[] pomPoint = startPoint;
@@ -721,11 +711,9 @@ namespace Axis
                         double[,] tetiva = AG.GetLineParametricEquationFromPointAndVector(startClothoidPoint, tetivaVektor);
                         double[,] normalaKtetive = AG.GetLineParametricEquationFromPointAndVector(point, normalaKtetiveVektor);
                         double[] tetivaPoint = AG.GetLinesIntersectionPoint(tetiva, normalaKtetive);
-                        l = AG.GetVectorLength(startClothoidPoint, tetivaPoint); // přibližná délka přechodnice = délka tětivy
-                        //R = clot.CalcR(A, l);
+                        l = AG.GetVectorLength(startClothoidPoint, tetivaPoint); // přibližná délka přechodnice = délka tětivy                        
                         tau = clot.CalcTau(l, Lk + Lposun, R1) * 200 / Math.PI;
-                        double[] yxk = clot.CalcXY(l, Lk + Lposun, R1);
-                        //bearing = axis[i + 1].bearing + 200;
+                        double[] yxk = clot.CalcXY(l, Lk + Lposun, R1);                        
                         while (startBearing < 0) startBearing = startBearing + 400;
                         while (startBearing > 400) startBearing = startBearing - 400;
                         vectorKx = AG.GetRajon(startBearing * Math.PI / 200, yxk[1]);
@@ -758,8 +746,7 @@ namespace Axis
                             if (diff >= 0) neg = 1;
                             else neg = -1;
                             l = l + (neg * distance); // přibližná délka přechodnice - iterační přiblížení
-                            stream.WriteLine("l: " + l);
-                            //R = clot.CalcR(A, l);
+                            stream.WriteLine("l: " + l);                            
                             tau = clot.CalcTau(l, Lk + Lposun, R1) * 200 / Math.PI;
                             stream.WriteLine("tau: " + tau);
                             yxk = clot.CalcXY(l, Lk + Lposun, R1);
@@ -777,8 +764,7 @@ namespace Axis
                             stream.WriteLine("diff: " + diff);
                             stream.WriteLine("distanc: " + distance);
 
-                            validParameter = i;
-                            //station = axis[i].station + Lk - l;  // zmena pro opacnz prechod
+                            validParameter = i;                            
                             station = axis[i].station + Lposun + Lk - l;
                             double pos = AG.GetPositionOnLineWithVector(pointK, tangentKvector, point);
                             if (pos <= 0) neg = 1;
@@ -827,8 +813,396 @@ namespace Axis
         }
 
 
-        /// <summary>
-        /// Vrací: validní úsek, staničení, kolmice, výška nad niveletou a průmět bodu na trasu
+
+        private Tuple<int, double, double, double, double[]> CalcYXCoordinates(double station, double offset, List<AxisParameter> axis)
+        {
+            double[] startPoint = new double[3];
+            double[] endPoint = new double[3];
+            double[] vector1 = new double[3];
+            double[] vector2 = new double[3];
+            double localStation = 0;
+
+            double[] tangentVector = new double[3];
+            double[] normalVector = new double[3];
+            double[] binormalVector = new double[3];
+            double[] tangentPoint = new double[3];
+
+            double[] centripetalVector = new double[3];
+            double[] startPointVector = new double[3];
+            double[] endPointVector = new double[3];
+            double[] centerPoint = new double[3];            
+
+            double[,] lineParametric1, lineParametric2;            
+
+            StreamWriter stream = new StreamWriter("log3.txt");
+            Clothoid.Clothoid clot = new Clothoid.Clothoid();
+            double bearing = -9999;
+            int validParameter = -99;
+            double[] intersectionPoint = new double[2];
+            double y = 0;
+            double x = 0;
+
+            if  (station < axis[0].station)
+            {
+                return new Tuple<int, double, double, double, double[]>(-9999, -9999, -9999, -9999, intersectionPoint);
+            }
+
+            if (station > axis[axis.Count - 2].station)
+            {
+                return new Tuple<int, double, double, double, double[]>(-9999, -9999, -9999, -9999, intersectionPoint);
+            }
+
+            for (int i = 0; i < axis.Count - 1; i++)
+            {                
+                if ((station < axis[i].station) || (station > axis[i + 1].station)) continue;
+
+                validParameter = i;
+
+                if (axis[i].type == 0)   // pro PŘÍMKU
+                {
+                    startPoint[0] = axis[i].y;
+                    startPoint[1] = axis[i].x;
+                    startPoint[2] = 0;
+                    endPoint[0] = axis[i].yEnd;
+                    endPoint[1] = axis[i].xEnd;
+                    endPoint[2] = 0;
+
+                    localStation = station - axis[i].station;
+                    vector1 = AG.GetVector(startPoint, endPoint); // tečný vektor
+                    vector1 = AG.GetExpandVectorToLength(vector1, localStation);
+                    intersectionPoint = AG.GetRajon(startPoint, vector1);
+                    vector2 = new double[] { vector1[1], -vector1[0], vector1[2] }; // normálový vektor
+                    vector2 = AG.GetExpandVectorToLength(vector2, offset);
+                    double[] point = AG.GetRajon(intersectionPoint, vector2);
+                    y = point[0];
+                    x = point[1];
+                    bearing = axis[i].bearing;
+                    break;
+                }
+
+
+                if (axis[i].type == 1)   // pro OBLOUK
+                {
+                    startPoint[0] = axis[i].y;
+                    startPoint[1] = axis[i].x;
+                    startPoint[2] = 0;
+                    endPoint[0] = axis[i + 1].y;
+                    endPoint[1] = axis[i + 1].x;
+                    endPoint[2] = 0;
+
+                    tangentPoint = AG.GetRajon(axis[i].bearing * Math.PI / 200, Math.Abs(axis[i].radius1));
+                    tangentPoint[0] = axis[i].y + tangentPoint[0];
+                    tangentPoint[1] = axis[i].x + tangentPoint[1];
+                    tangentPoint[2] = 0;
+                    tangentVector = AG.GetVector(startPoint, tangentPoint);
+                    if (axis[i].radius1 > 0) // oblouk doprava
+                    {
+                        centripetalVector[0] = tangentVector[1];
+                        centripetalVector[1] = -tangentVector[0];
+                        centripetalVector[2] = 0;
+                    }
+                    else  // oblouk doleva
+                    {
+                        centripetalVector[0] = -tangentVector[1];
+                        centripetalVector[1] = tangentVector[0];
+                        centripetalVector[2] = 0;
+                    }
+
+                    localStation = station - axis[i].station;
+                    centerPoint = AG.GetRajon(startPoint, centripetalVector);
+                    double angle = (localStation / (Math.PI * Math.Abs(axis[i].radius1))) * 200;
+                    double[] centerToStartVector = AG.GetNegativeVector(centripetalVector);
+                    double bearingCenterToPoint = 0;                    
+
+                    if (axis[i].radius1 > 0) // oblouk doprava
+                    {
+                        bearingCenterToPoint = AG.GetVectorBearing(centerToStartVector) + angle;
+                        bearing = bearingCenterToPoint + 100;                        
+                    }
+                    else  // oblouk doleva
+                    {
+                        bearingCenterToPoint = AG.GetVectorBearing(centerToStartVector) - angle;
+                        bearing = bearingCenterToPoint - 100;                        
+                    }
+
+                    while (bearingCenterToPoint < 0) bearingCenterToPoint = bearingCenterToPoint + 400;
+                    while (bearing < 0) bearing = bearing + 400;
+                    while (bearingCenterToPoint >= 400) bearingCenterToPoint = bearingCenterToPoint - 400;
+                    while (bearing >= 400) bearing = bearing - 400;
+
+                    double[] vectorCenterToPoint = AG.GetVector(bearingCenterToPoint, Math.Abs(axis[i].radius1));
+                    intersectionPoint = AG.GetRajon(centerPoint, vectorCenterToPoint);
+                    double[] pointVector = AG.GetVector(bearing, Math.Abs(axis[i].radius1));
+                    double[] offsetVector = AG.GetRightVector(pointVector);
+                    offsetVector = AG.GetExpandVectorToLength(offsetVector, offset);
+                    double[] point = AG.GetRajon(intersectionPoint, offsetVector);
+                    y = point[0];
+                    x = point[1];
+                    break;
+                }
+
+
+                if (axis[i].type == 2)   // pro PŘECHODNICI
+                {
+                    validParameter = i;
+                    startPoint[0] = axis[i].y;
+                    startPoint[1] = axis[i].x;
+                    startPoint[2] = 0;
+                    endPoint[0] = axis[i + 1].y;
+                    endPoint[1] = axis[i + 1].x;
+                    endPoint[2] = 0;
+
+                    double R1 = axis[i].radius1;
+                    double R2 = axis[i].radius2;
+                    double Rk;
+                    double Lk = Math.Abs(axis[i].length);                                        
+                    double L, A, tau, tauK;
+                    double l = 0;
+                                       
+                    double[] pomPoint;
+
+                    if ((R1 == 0) && (R2 != 0)) // z přímé do oblouku
+                    {
+                        stream.WriteLine("***************************************");
+                        stream.WriteLine("****** Z PRIME DO OBLOUKU *************");
+                        stream.WriteLine("***************************************");
+
+                        localStation = station - axis[i].station;
+                        tangentPoint = AG.GetRajon(axis[i].bearing * Math.PI / 200, Lk);
+                        tangentPoint[0] = axis[i].y + tangentPoint[0];
+                        tangentPoint[1] = axis[i].x + tangentPoint[1];
+                        tangentPoint[2] = 0;
+                        tangentVector = AG.GetVector(startPoint, tangentPoint);
+
+                        A = Math.Sqrt(axis[i].length * Math.Abs(R2));
+                        stream.WriteLine("startPoint: " + startPoint[0] + " " + startPoint[1]);
+                        double b = AG.GetVectorBearing(tangentVector);
+                        stream.WriteLine("startBearing: " + b);
+                        stream.WriteLine("A: " + A);
+                        Rk = clot.CalcR(A, localStation);
+                        double DOC = clot.CalcDOC(Math.Abs(R2));
+                        stream.WriteLine("DOC: " + DOC);
+                        stream.WriteLine("Rk:" + Rk);
+                        tau = clot.CalcTauK(localStation, Rk);
+                        stream.WriteLine("tau:" + tau * 200 / Math.PI);                        
+                        double[] yx = clot.CalcXkYk(localStation, Math.Abs(Rk));
+                        stream.WriteLine("dy: " + yx[0] + " dx: " + yx[1]);
+                        tangentVector = AG.GetExpandVectorToLength(tangentVector, yx[1]);
+                        normalVector = AG.GetExpandVectorToLength(AG.GetRightVector(tangentVector),yx[0]);
+                        if (R2 < 0) normalVector = AG.GetNegativeVector(normalVector);
+                        pomPoint = AG.GetRajon(startPoint, tangentVector);
+                        intersectionPoint = AG.GetRajon(pomPoint, normalVector);
+
+                        if (R2 >= 0) bearing = axis[i].bearing + (tau * 200 / Math.PI);
+                        else bearing = axis[i].bearing - (tau * 200 / Math.PI);
+                        stream.WriteLine("bearing:" + bearing);
+
+                        tangentVector = AG.GetVector(bearing, Math.Abs(offset));
+                        normalVector = AG.GetRightVector(tangentVector);                        
+                        if (offset < 0) normalVector = AG.GetNegativeVector(normalVector);
+                        stream.WriteLine("tangentVector:" + tangentVector[0] + " " + tangentVector[1]);
+                        stream.WriteLine("normalVector:" + normalVector[0] + " " + normalVector[1]);
+                        double[] point = AG.GetRajon(intersectionPoint, normalVector);
+                        y = point[0];
+                        x = point[1];
+                        break;
+                    }
+
+
+                    if ((R2 == 0) && (R1 != 0)) // z oblouku do přímé
+                    {
+                        stream.WriteLine("***************************************");
+                        stream.WriteLine("****** Z OBLOUKU DO PRIME *************");
+                        stream.WriteLine("***************************************");
+                        R1 = -R1;   // klotoida jde z opačné strany, musí mít opačné znaménko, stáčí se opačným směrem
+                        A = Math.Sqrt(axis[i].length * Math.Abs(R1));                        
+                        double[] pomPoint1 = startPoint;
+                        startPoint = endPoint;
+                        endPoint = pomPoint1;
+                        localStation = axis[i + 1].station - station;
+
+                        double bearingBack = axis[i + 1].bearing + 200;
+                        while (bearingBack >= 400) bearingBack = bearingBack - 400;
+
+                        tangentPoint = AG.GetRajon(bearingBack * Math.PI / 200, Lk);
+                        tangentPoint[0] = axis[i + 1].y + tangentPoint[0];
+                        tangentPoint[1] = axis[i + 1].x + tangentPoint[1];
+                        tangentPoint[2] = 0;
+                        tangentVector = AG.GetVector(startPoint, tangentPoint);
+
+                        stream.WriteLine("startPoint: " + startPoint[0] + " " + startPoint[1]);
+                        double b = AG.GetVectorBearing(tangentVector);
+                        stream.WriteLine("startBearing: " + b);
+                        stream.WriteLine("A: " + A);
+                        Rk = clot.CalcR(A, localStation);
+                        double DOC = clot.CalcDOC(Math.Abs(R1));
+                        stream.WriteLine("DOC: " + DOC);
+                        stream.WriteLine("Rk:" + Rk);
+                        tau = clot.CalcTauK(localStation, Rk);
+                        stream.WriteLine("tau:" + tau * 200 / Math.PI);                        
+                        double[] yx = clot.CalcXkYk(localStation, Math.Abs(Rk));
+                        stream.WriteLine("dy: " + yx[0] + " dx: " + yx[1]);
+                        tangentVector = AG.GetExpandVectorToLength(tangentVector, yx[1]);
+                        normalVector = AG.GetExpandVectorToLength(AG.GetRightVector(tangentVector), yx[0]);
+                        if (R1 < 0) normalVector = AG.GetNegativeVector(normalVector);
+                        pomPoint = AG.GetRajon(startPoint, tangentVector);
+                        intersectionPoint = AG.GetRajon(pomPoint, normalVector);
+
+                        if (R1 >= 0) bearingBack = bearingBack + (tau * 200 / Math.PI);
+                        else bearingBack = bearingBack - (tau * 200 / Math.PI);
+                        stream.WriteLine("bearing:" + bearingBack);
+
+                        tangentVector = AG.GetVector(bearingBack, Math.Abs(offset));
+                        normalVector = AG.GetRightVector(tangentVector);
+                        if (offset >= 0) normalVector = AG.GetNegativeVector(normalVector);
+                        stream.WriteLine("tangentVector:" + tangentVector[0] + " " + tangentVector[1]);
+                        stream.WriteLine("normalVector:" + normalVector[0] + " " + normalVector[1]);
+                        double[] point = AG.GetRajon(intersectionPoint, normalVector);
+                        y = point[0];
+                        x = point[1];
+                        bearing = bearingBack + 200;
+                        while (bearing >= 400) bearing = bearing - 400;
+                        break;
+
+
+                    }
+
+                    
+                    if ((R2 != 0) && (R1 != 0) && (Math.Abs(R1) > Math.Abs(R2))) // z většího poloměru oblouku na menší poloměr oblouk
+                    {
+                        stream.WriteLine("***************************************");
+                        stream.WriteLine("* Z VĚTŠÍHO POLOMĚRU OBLOUKU NA MENŠÍ *");
+                        stream.WriteLine("***************************************");                        
+                        A = Math.Sqrt((Math.Abs(R1) * Math.Abs(R2) * axis[i].length) / Math.Abs(R1 - R2));
+                        stream.WriteLine("A: " + A);
+                        var result1 = clot.CalcStartPoint(startPoint, endPoint, R1, R2, axis[i].length, axis[i].bearing);
+                        double[] startClothoidPoint = result1.Item1;
+                        double bearingBack = result1.Item2;
+                        double Lposun = result1.Item3;
+                        stream.WriteLine("startClothoidPoint: " + startClothoidPoint[0] + " " + startClothoidPoint[1]);
+                        localStation = station - axis[i].station + Lposun;
+                        stream.WriteLine("Lposun: " + Lposun);
+                        stream.WriteLine("localStation: " + localStation);
+
+                        tangentPoint = AG.GetRajon(bearingBack * Math.PI / 200, Lk);
+                        tangentPoint[0] = startClothoidPoint[0] + tangentPoint[0];
+                        tangentPoint[1] = startClothoidPoint[1] + tangentPoint[1];
+                        tangentPoint[2] = 0;
+                        tangentVector = AG.GetVector(startClothoidPoint, tangentPoint);
+                        
+                        stream.WriteLine("startBearing: " + bearingBack);
+                        stream.WriteLine("A: " + A);
+                        Rk = clot.CalcR(A, localStation);
+                        double DOC = clot.CalcDOC(Math.Abs(Rk));
+                        stream.WriteLine("DOC: " + DOC);
+                        stream.WriteLine("Rk:" + Rk);
+                        tau = clot.CalcTauK(localStation, Rk);
+                        stream.WriteLine("tau:" + tau * 200 / Math.PI);                        
+                        double[] yx = clot.CalcXkYk(localStation, Math.Abs(Rk));
+                        stream.WriteLine("dy: " + yx[0] + " dx: " + yx[1]);
+                        tangentVector = AG.GetExpandVectorToLength(tangentVector, yx[1]);
+                        normalVector = AG.GetExpandVectorToLength(AG.GetRightVector(tangentVector), yx[0]);
+                        if (R1 < 0) normalVector = AG.GetNegativeVector(normalVector);
+                        pomPoint = AG.GetRajon(startClothoidPoint, tangentVector);
+                        intersectionPoint = AG.GetRajon(pomPoint, normalVector);
+
+                        if (R1 >= 0) bearingBack = bearingBack + (tau * 200 / Math.PI);
+                        else bearingBack = bearingBack - (tau * 200 / Math.PI);
+                        stream.WriteLine("bearing:" + bearingBack);
+
+                        tangentVector = AG.GetVector(bearingBack, Math.Abs(offset));
+                        normalVector = AG.GetRightVector(tangentVector);
+                        if (offset < 0) normalVector = AG.GetNegativeVector(normalVector);
+                        stream.WriteLine("tangentVector:" + tangentVector[0] + " " + tangentVector[1]);
+                        stream.WriteLine("normalVector:" + normalVector[0] + " " + normalVector[1]);
+                        double[] point = AG.GetRajon(intersectionPoint, normalVector);
+                        y = point[0];
+                        x = point[1];
+                        bearing = bearingBack;
+                        while (bearing >= 400) bearing = bearing - 400;
+                        break;
+                    }
+
+                    
+                     
+                    if ((R2 != 0) && (R1 != 0) && (Math.Abs(R1) < Math.Abs(R2))) // z menšího poloměru oblouku na větší poloměr oblouk
+                    {
+                        stream.WriteLine("***************************************");
+                        stream.WriteLine("* Z MENŠÍHO POLOMĚRU OBLOUKU NA VĚTŠÍ *");
+                        stream.WriteLine("***************************************");
+                        R1 = -R1;   // klotoida jde z opačné strany, musí mít opačné znaménko, stáčí se opačným směrem
+                        R2 = -R2;                        
+                        A = Math.Sqrt((Math.Abs(R1) * Math.Abs(R2) * axis[i].length) / Math.Abs(R1 - R2));
+                        stream.WriteLine("A: " + A);
+                        pomPoint = startPoint;
+                        startPoint = endPoint;
+                        endPoint = pomPoint;
+
+                        var result1 = clot.CalcStartPoint(startPoint, endPoint, R2, R1, axis[i].length, axis[i + 1].bearing - 200);
+                        double[] startClothoidPoint = result1.Item1;
+                        double bearingBack = result1.Item2;
+                        double Lposun = result1.Item3;
+                        stream.WriteLine("startClothoidPoint: " + startClothoidPoint[0] + " " + startClothoidPoint[1]);
+                        localStation = axis[i].station + Lposun + axis[i].length - station;
+                        stream.WriteLine("Lposun: " + Lposun);
+                        stream.WriteLine("localStation: " + localStation);
+
+                        tangentPoint = AG.GetRajon(bearingBack * Math.PI / 200, Lk);
+                        tangentPoint[0] = startClothoidPoint[0] + tangentPoint[0];
+                        tangentPoint[1] = startClothoidPoint[1] + tangentPoint[1];
+                        tangentPoint[2] = 0;
+                        tangentVector = AG.GetVector(startClothoidPoint, tangentPoint);
+
+                        stream.WriteLine("startBearing: " + bearingBack);
+                        stream.WriteLine("A: " + A);
+                        Rk = clot.CalcR(A, localStation);
+                        double DOC = clot.CalcDOC(Math.Abs(Rk));
+                        stream.WriteLine("DOC: " + DOC);
+                        stream.WriteLine("Rk:" + Rk);
+                        tau = clot.CalcTauK(localStation, Rk);
+                        stream.WriteLine("tau:" + tau * 200 / Math.PI);                        
+                        double[] yx = clot.CalcXkYk(localStation, Math.Abs(Rk));
+                        stream.WriteLine("dy: " + yx[0] + " dx: " + yx[1]);
+                        tangentVector = AG.GetExpandVectorToLength(tangentVector, yx[1]);
+                        normalVector = AG.GetExpandVectorToLength(AG.GetRightVector(tangentVector), yx[0]);
+                        if (R1 < 0) normalVector = AG.GetNegativeVector(normalVector);
+                        pomPoint = AG.GetRajon(startClothoidPoint, tangentVector);
+                        intersectionPoint = AG.GetRajon(pomPoint, normalVector);
+
+                        if (R1 >= 0) bearingBack = bearingBack + (tau * 200 / Math.PI);
+                        else bearingBack = bearingBack - (tau * 200 / Math.PI);
+                        stream.WriteLine("bearing:" + bearingBack);
+
+                        tangentVector = AG.GetVector(bearingBack, Math.Abs(offset));
+                        normalVector = AG.GetRightVector(tangentVector);
+                        if (offset >= 0) normalVector = AG.GetNegativeVector(normalVector);
+                        stream.WriteLine("tangentVector:" + tangentVector[0] + " " + tangentVector[1]);
+                        stream.WriteLine("normalVector:" + normalVector[0] + " " + normalVector[1]);
+                        double[] point = AG.GetRajon(intersectionPoint, normalVector);
+                        y = point[0];
+                        x = point[1];
+                        bearing = bearingBack + 200;
+                        while (bearing >= 400) bearing = bearing - 400;
+                        break;
+
+                    }
+
+
+                }
+
+
+            }
+
+
+            stream.Close();
+
+            return new Tuple<int, double, double, double, double[]>(validParameter, y, x, bearing, intersectionPoint);
+        }
+
+
+
+        // <summary>
+        /// Vrací: validní úsek, staničení, kolmice, směrník a kolmý průmět bodu na osu
         /// </summary>
         /// <param name="point">Bod k transformaci na trasu</param>
         /// <returns></returns>
@@ -838,5 +1212,20 @@ namespace Axis
             return new Tuple<int, double, double, double, double[]>(result.Item1, result.Item2, result.Item3, result.Item4, result.Item5);
         }
 
+
+        // <summary>
+        /// Vrací: validní úsek, y, x, směrník a kolmý průmět bodu na osu
+        /// </summary>
+        /// <param name="point">Bod k transformaci na trasu</param>
+        /// <returns></returns>
+        public Tuple<int, double, double, double, double[]> GetYXCoordinates(double station, double offset)
+        {
+            var result = CalcYXCoordinates(station, offset, axis);
+            return new Tuple<int, double, double, double, double[]>(result.Item1, result.Item2, result.Item3, result.Item4, result.Item5);
+        }
+
     }
 }
+
+
+
