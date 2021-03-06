@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace Points
+namespace CooCompare
 {
     public class POINT
     {
         //NYXZC
         public int i { get; set; }  // index 
-        public int n { get; set; }  // number or name
+        public string n { get; set; }  // number or name
         public double y { get; set; } // coordinate y
         public double x { get; set; } // coordinate x
         public double z { get; set; } // coordinate z        
@@ -64,7 +64,7 @@ namespace Points
                 prvky = radek.Split(' ');
                 for (int i = 0; i < prvky.Length; i++)
                 {
-                    if (type[i] == 'N') point.n = Convert.ToInt32(prvky[i]);
+                    if (type[i] == 'N') point.n = prvky[i];
                     if (type[i] == 'Y') point.y = Convert.ToDouble(prvky[i]);
                     if (type[i] == 'X') point.x = Convert.ToDouble(prvky[i]);
                     if (type[i] == 'Z') point.z = Convert.ToDouble(prvky[i]);
@@ -142,7 +142,19 @@ namespace Points
         /// <returns></returns>
         public double Get2dDistance(POINT point1, POINT point2)
         {
-            double distance = Math.Sqrt((point2.y - point1.y) * (point2.y - point1.y) + (point2.x - point1.x) * (point2.x - point1.x));
+            double distance = Math.Sqrt(((point2.y - point1.y) * (point2.y - point1.y)) + ((point2.x - point1.x) * (point2.x - point1.x)));
+            return distance;
+        }
+
+        /// <summary>
+        /// Get 3D Distance
+        /// </summary>
+        /// <param name="point1">from</param>
+        /// <param name="point2">to</param>
+        /// <returns></returns>
+        public double Get3dDistance(POINT point1, POINT point2)
+        {
+            double distance = Math.Sqrt(((point2.y - point1.y) * (point2.y - point1.y)) + ((point2.x - point1.x) * (point2.x - point1.x)) + ((point2.z - point1.z) * (point2.z - point1.z)));
             return distance;
         }
 
