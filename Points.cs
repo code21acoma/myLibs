@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace Points
+namespace MyPoints
 {
     public class POINT
     {
@@ -16,11 +16,20 @@ namespace Points
         public double x { get; set; } // coordinate x
         public double z { get; set; } // coordinate z        
         public string comment { get; set; } // note, comment
+        public string datetime { get; set; } // date and time
+
+    }
+
+    public class Duplicity
+    {
+        public string pn1 { get; set; }  // point number 1
+        public string pn2 { get; set; }  // point number 2
     }
 
     public class Points
     {
         public List<POINT> points = new List<POINT>();
+        public List<Duplicity> duplicityPoints = new List<Duplicity>();
 
         public Points() { }
 
@@ -53,6 +62,67 @@ namespace Points
         public void AddPoint(POINT point)
         {
             points.Add(point);
+        }
+
+        public void ErasePointNumber(string pn)
+        {
+            var itemToRemove = points.Find(r => r.n == pn);
+            if (itemToRemove != null) points.Remove(itemToRemove);
+        }
+
+        public void FindAndEraseDuplicityPoints(bool eraseOlder, double maxDistance)
+        {
+            duplicityPoints.Clear();
+            for (int i = 0; i < points.Count - 1; i++)
+            {
+                for (int j = i + 1; j < points.Count - 1; j++)
+                {
+                    double distance = Get2dDistance(points[i], points[j]);
+                    if (distance < maxDistance)
+                    {
+                        Duplicity dup = new Duplicity();
+                        dup.pn1 = points[i].n;
+                        dup.pn2 = points[j].n;
+                        duplicityPoints.Add(dup);
+                    }
+                }
+            }
+
+            foreach (Duplicity dup in duplicityPoints)
+            {
+                // do something with entry.Value or entry.Key
+                if (Convert.ToDouble(dup.pn1) > Convert.ToDouble(dup.pn2))
+                {
+                    if (eraseOlder == true) ErasePointNumber(dup.pn2);
+                    else ErasePointNumber(dup.pn1);
+                }
+                else
+                {
+                    if (eraseOlder == true) ErasePointNumber(dup.pn1);
+                    else ErasePointNumber(dup.pn2);
+                }
+            }
+        }
+
+        public bool FindDuplicityPointByName()
+        {
+            bool duplicity = false;
+            duplicityPoints.Clear();
+            for (int i = 0; i < points.Count - 1; i++)
+            {
+                for (int j = i + 1; j < points.Count - 1; j++)
+                {
+                    if (points[i].n == points[j].n)
+                    {
+                        duplicity = true;
+                        Duplicity dup = new Duplicity();
+                        dup.pn1 = points[i].n;
+                        dup.pn2 = points[j].n;
+                        duplicityPoints.Add(dup);
+                    }
+                }
+            }
+            return duplicity;
         }
 
         /// <summary>
@@ -301,6 +371,40 @@ namespace Points
             reader.Close();
         }
 
+
+        /// <summary>
+        /// Export file with points
+        /// </summary>
+        /// <param name="file">file path</param>
+        /// <param name="type">ouput type - for example NYXZC (number, y, x, z, commnet)</param>
+        /// <param name="separator">separator ';' or ' ',...</param>
+        public void Export(string file, string type, string separator)
+        {
+            StreamWriter writer = new StreamWriter(file);
+            string radek;
+            for (int i = 0; i < points.Count; i++)
+            {
+                radek = "";
+                for (int j = 0; j < type.Length; j++)
+                {
+                    if (type[j] == 'N') radek = radek + points[i].n.ToString() + separator;
+                    if (type[j] == 'Y') radek = radek + points[i].y.ToString("0.000") + separator;
+                    if (type[j] == 'X') radek = radek + points[i].x.ToString("0.000") + separator;
+                    if (type[j] == 'Z') radek = radek + points[i].z.ToString("0.000") + separator;
+                    if (type[j] == 'C') radek = radek + points[i].comment.ToString() + separator;
+                }
+
+                try
+                {
+                    radek = ReplaceLastOccurrence(radek, separator, "");
+                    writer.WriteLine(radek);
+                }
+                catch { }
+            }
+
+            writer.Close();
+
+        }
 
         /// <summary>
         /// Export defined file with points
