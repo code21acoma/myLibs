@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Points
 {
@@ -21,7 +22,7 @@ namespace Points
     {
         public List<POINT> points = new List<POINT>();
 
-        public Points() {}
+        public Points() { }
 
         public static string ReplaceFirstOccurrence(string Source, string Find, string Replace)
         {
@@ -37,12 +38,82 @@ namespace Points
             return result;
         }
 
+        /// <summary>
+        /// Regex.Replace can act upon spaces. It can merge multiple spaces in a string to one space. We use a pattern to change multiple spaces to single spaces. The characters \s+ come in handy.
+        /// </summary>
+        /// <param name="value">Input String</param>
+        /// <returns>Output String</returns>
+        public static string RemoveWhiteSpaces(string value)
+        {
+            value = value.Trim();
+            return Regex.Replace(value, @"\s+", " ");
+        }
+
 
         public void AddPoint(POINT point)
         {
             points.Add(point);
         }
 
+        /// <summary>
+        /// Najde stejná předčíslí bodů se dvěma rozdílnými koncovkami (slouží k hledání refline bodů)
+        /// </summary>
+        /// <param name="suffix1"></param>
+        /// <param name="suffix2"></param>
+        /// <returns>Seznam předčíslí bodů bez koncovky</returns>
+        public List<string> GetPointsWithSuffix(string suffix1, string suffix2)
+        {
+            //bool nalezen = false;
+            List<string> result = new List<string>();
+            foreach (POINT point1 in points)
+            {
+                string pointSuffix1 = point1.n.Substring(point1.n.Length - suffix1.Length, suffix1.Length);
+                if (pointSuffix1 == suffix1)
+                {
+                    string pointname2 = point1.n.Substring(0, point1.n.Length - suffix1.Length) + suffix2;
+                    for (int i = 0; i < points.Count; i++)
+                    {
+                        //string pointSuffix2 = points[i].n.Substring(points[i].n.Length - suffix2.Length, suffix2.Length);
+                        if (points[i].n == pointname2)
+                        {
+                            result.Add(point1.n + "-" + points[i].n);
+                            break;
+                        }
+                    }                                       
+                }                
+            }
+            return result;        
+        }    
+
+        public POINT GetPoint(string pointNumber)
+        {
+            POINT point = new POINT();
+            int index = points.FindIndex(a => a.n == pointNumber);
+            if (index != -1)
+            {
+                point = points[index];
+            }
+
+            return point;
+        }
+
+        public double[,] GetAllPointsXYZ()
+        {            
+            double[,] exportPoints = new double[points.Count,3];
+            for (int i = 0; i < points.Count; i++)
+            {
+                exportPoints[i, 0] = points[i].y;
+                exportPoints[i, 1] = points[i].x;
+                exportPoints[i, 2] = points[i].z;
+            }
+
+            return exportPoints;
+        }
+
+        public int GetPointsCount()
+        {
+            return points.Count;
+        }
 
         /// <summary>
         /// Find type of import file
@@ -77,7 +148,7 @@ namespace Points
                 POINT point = new POINT();
                 radek = radek.Replace(",", ".");
                 radek = radek.Replace(";", " ");
-                radek = radek.Trim();
+                radek = RemoveWhiteSpaces(radek);
                 prvky = radek.Split(' ');
                 for (int i = 0; i < prvky.Length; i++)
                 {
@@ -108,11 +179,12 @@ namespace Points
                 POINT point = new POINT();
                 radek = radek.Replace(",", ".");
                 radek = radek.Replace(";", " ");
-                radek = radek.Trim();
+                radek = RemoveWhiteSpaces(radek);
                 prvky = radek.Split(' ');
-                if (radek[0] == '#') continue;
+                if (prvky.Length < 4) continue;
                 if ((radek == "") || (radek == " ")) continue;
-
+                if (radek[0] == '#') continue;
+                
                 point.n = prvky[0];
                 point.y = Convert.ToDouble(prvky[1]);
                 point.x = Convert.ToDouble(prvky[2]);
@@ -219,7 +291,8 @@ namespace Points
                 point.n = pn;
                 point.y = Convert.ToDouble(y);
                 point.x = Convert.ToDouble(x);
-                point.z = Convert.ToDouble(z);
+                if (z == "") point.z = double.NaN;
+                else point.z = Convert.ToDouble(z);
                 point.comment = poznamka;
 
                 points.Add(point);
@@ -273,7 +346,10 @@ namespace Points
             StreamWriter writer = new StreamWriter(file);            
             for (int i = 0; i < points.Count; i++)
             {
-                writer.WriteLine(points[i].n + " " + points[i].y + " " + points[i].x + " " + points[i].z + " " + points[i].comment);
+                string zz = points[i].z.ToString() + " ";
+                if (Double.IsNaN(points[i].z)) zz = "";
+
+                writer.WriteLine(points[i].n + " " + points[i].y + " " + points[i].x + " " + zz + points[i].comment);
             }
             writer.Close();
         }
@@ -286,8 +362,10 @@ namespace Points
         {
             StreamWriter writer = new StreamWriter(file);           
             for (int i = 0; i < points.Count; i++)
-            {                
-                writer.WriteLine(points[i].n + ";" + points[i].y.ToString().Replace(".",",") + ";" + points[i].x.ToString().Replace(".", ",") + ";" + points[i].z.ToString().Replace(".", ",") + ";" + points[i].comment);
+            {
+                string zz = points[i].z.ToString().Replace(".", ",") + ";";
+                if (Double.IsNaN(points[i].z)) zz = "";
+                writer.WriteLine(points[i].n + ";" + points[i].y.ToString().Replace(".", ",") + ";" + points[i].x.ToString().Replace(".", ",") + ";" + zz + points[i].comment);
             }
             writer.Close();
         }
@@ -309,7 +387,7 @@ namespace Points
                 string x = (Convert.ToDouble(points[i].x) * 1000).ToString("0");
                 while (x.Length != 16) x = "0" + x;
                 string z = " ";
-                if (points[i].z != Double.NaN)
+                if (!Double.IsNaN(points[i].z))
                 {
                     string signum = "+";
                     z = points[i].z.ToString("0.000");
