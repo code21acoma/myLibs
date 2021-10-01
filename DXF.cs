@@ -26,31 +26,99 @@ See the Group 72 and 73 integer codes table for clarification.
 
 */
 
+/*
+  
+POLYLINE
+
+0        <<< POLYLINE entity
+POLYLINE
+8        <<< layer group code required
+0        <<< layer '0'
+62       <<< color group code not required
+1        <<< Color number
+66       <<< entities follow flag
+1        <<< always 1, POLYLINE without vertices is pointless
+70       <<< flags, see reference
+8        <<< this is a 3D polyline
+0        <<< 1. VERTEX entity
+VERTEX
+8        <<< layer group code required
+0        <<< ALWAYS the same as POLYLINE layer!
+70       <<< flags
+32       <<< 3D polyline vertex
+10       <<< x-coord group code
+4.0      <<< x-coord value
+20       <<< y-coord group code
+3.0      <<< y-coord value
+30       <<< y-coord group code
+2.0      <<< z-coord value
+0        <<< 2. VERTEX entity
+VERTEX
+8
+0
+70
+32
+10
+8.0
+20
+5.0
+30
+0.0
+0        <<< 3. VERTEX entity
+VERTEX
+8
+0
+70
+32
+10
+2.0
+20
+4.0
+30
+9.0
+0        <<< required SEQEND entity
+SEQEND
+
+
+
+
+
+
+
+
+
+
+
+*/
 namespace DXF
 {
     class DXF
     {
-        public class LINE
+        public class ELEMENT
+        {
+            public double x { get; set; }
+            public double y { get; set; }
+            public double z { get; set; }
+            public string layer { get; set; }
+            public int color { get; set; }
+            public double thick { get; set; }
+        }
+        
+        public class LINE : ELEMENT
         {
             public double x1 { get; set; }
             public double y1 { get; set; }
             public double x2 { get; set; }
             public double y2 { get; set; }
             public double z1 { get; set; }
-            public double z2 { get; set; }
-            public string layer { get; set; }
-            public int color { get; set; }
-            public double thick { get; set; }
+            public double z2 { get; set; }            
         }
         
         public List<LINE> LINElist = new List<LINE>();
 
-        public class TEXT
+        public class TEXT : ELEMENT
         {
-            public string write { get; set; }
-            public double x { get; set; }
-            public double y { get; set; }
-            public double z { get; set; }
+            public string write { get; set; }            
             public double hJust { get; set; }
             /*
              Horizontal text justification type (optional, default = 0) integer codes (not bit-coded)
@@ -64,10 +132,7 @@ namespace DXF
              Vertical text justification type (optional, default = 0): integer codes (not bit- coded):
              0 = Baseline; 1 = Bottom; 2 = Middle; 3 = Top
              See the Group 72 and 73 integer codes table for clarification.              
-             */
-            public string layer { get; set; }
-            public int color { get; set; }
-            public double thick { get; set; } // tloušťka textu
+             */          
             public double height { get; set; } // výška textu
             public double angle { get; set; }  // uhel otočení
             public double widthFactor { get; set; }  // faktor šířky textu
@@ -77,14 +142,8 @@ namespace DXF
 
         public List<TEXT> TEXTlist = new List<TEXT>();
 
-        public class ARC
-        {
-            public double x { get; set; }
-            public double y { get; set; }
-            public double z { get; set; }
-            public string layer { get; set; }
-            public int color { get; set; }
-            public double thick { get; set; }
+        public class ARC : ELEMENT
+        {            
             public double startAngle { get; set; }
             public double endAngle { get; set; }
             public double radius { get; set; }
@@ -95,30 +154,35 @@ namespace DXF
 
         public List<ARC> ARClist = new List<ARC>();
 
-        public class CIRCLE
-        {
-            public double x { get; set; }
-            public double y { get; set; }
-            public double z { get; set; }
-            public string layer { get; set; }
-            public int color { get; set; }
-            public double thick { get; set; }
+        public class CIRCLE : ELEMENT
+        {            
             public double radius { get; set; }
         }
 
         public List<CIRCLE> CIRCLElist = new List<CIRCLE>();
 
-        public class POINT
+        public class POINT : ELEMENT
         {
-            public double x { get; set; }
-            public double y { get; set; }
-            public double z { get; set; }
-            public string layer { get; set; }
-            public int color { get; set; }
-            public double thick { get; set; }
+            public string name;
         }
 
         public List<POINT> POINTlist = new List<POINT>();
+
+        public class TRIANGLE : ELEMENT
+        {
+            public POINT point1 { get; set; }
+            public POINT point2 { get; set; }
+            public POINT point3 { get; set; }            
+        }
+
+        public List<TRIANGLE> TRIANGLElist = new List<TRIANGLE>();
+
+        public class POLYLINE : ELEMENT
+        {
+            public List<POINT> points { get; set; }
+        }
+
+        public List<POLYLINE> POLYLINElist = new List<POLYLINE>();
 
 
         static string RemoveWhiteSpaces(string value)
@@ -161,6 +225,8 @@ namespace DXF
             ARClist.Clear();
             CIRCLElist.Clear();
             POINTlist.Clear();
+            POLYLINElist.Clear();
+            TRIANGLElist.Clear();
         }
 
         
@@ -354,6 +420,40 @@ namespace DXF
             POINTlist.Add(point);
         }
 
+        public void addTriangle(POINT point1, POINT point2, POINT point3, string layer)
+        {
+            TRIANGLE triangle = new TRIANGLE();
+            triangle.point1 = point1;
+            triangle.point2 = point2;
+            triangle.point3 = point3;
+            triangle.layer = layer;
+            TRIANGLElist.Add(triangle);
+        }
+
+        
+        public void addPolyline(double[,] points, int count, string layer, int color, int thick)
+        {
+            POLYLINE polyline = new POLYLINE();
+
+            for (int i = 0; i < count; i++)
+            {
+                POINT point = new POINT();
+                point.x = points[i, 0];
+                point.y = points[i, 1];
+                point.z = points[i, 2];
+                point.layer = layer;
+                point.color = color;
+                point.thick = thick;
+                polyline.points.Add(point);
+            }
+
+            polyline.layer = layer;
+            polyline.color = color;
+            polyline.thick = thick;
+
+            POLYLINElist.Add(polyline);            
+        }
+
 
         private void hlavicka(StreamWriter sw)
         {
@@ -539,6 +639,83 @@ namespace DXF
             }
         }
 
+        private void saveTriangle(StreamWriter sw)
+        {
+            for (int i = 0; i < TRIANGLElist.Count; i++)
+            {
+                sw.WriteLine("3DFACE");
+                sw.WriteLine("8");
+                sw.WriteLine(TRIANGLElist[i].layer);
+                sw.WriteLine("62");
+                sw.WriteLine(TRIANGLElist[i].color);
+                sw.WriteLine("39");
+                sw.WriteLine(TRIANGLElist[i].thick);
+                sw.WriteLine("10");
+                sw.WriteLine(TRIANGLElist[i].point1.x);
+                sw.WriteLine("20");
+                sw.WriteLine(TRIANGLElist[i].point1.y);
+                sw.WriteLine("30");
+                sw.WriteLine(TRIANGLElist[i].point1.z);
+                sw.WriteLine("11");
+                sw.WriteLine(TRIANGLElist[i].point2.x);
+                sw.WriteLine("21");
+                sw.WriteLine(TRIANGLElist[i].point2.y);
+                sw.WriteLine("31");
+                sw.WriteLine(TRIANGLElist[i].point2.z);
+                sw.WriteLine("12");
+                sw.WriteLine(TRIANGLElist[i].point3.x);
+                sw.WriteLine("22");
+                sw.WriteLine(TRIANGLElist[i].point3.y);
+                sw.WriteLine("32");
+                sw.WriteLine(TRIANGLElist[i].point3.z);
+                sw.WriteLine("13");
+                sw.WriteLine(TRIANGLElist[i].point3.x);
+                sw.WriteLine("23");
+                sw.WriteLine(TRIANGLElist[i].point3.y);
+                sw.WriteLine("33");
+                sw.WriteLine(TRIANGLElist[i].point3.z);
+                sw.WriteLine("0");
+            }
+        }
+
+        private void savePolyline(StreamWriter sw)
+        {
+            for (int i = 0; i < POLYLINElist.Count; i++)
+            {
+                sw.WriteLine("POLYLINE");
+                sw.WriteLine("8");
+                sw.WriteLine(POLYLINElist[i].layer);
+                sw.WriteLine("62");
+                sw.WriteLine(POLYLINElist[i].color);
+                sw.WriteLine("39");
+                sw.WriteLine(POLYLINElist[i].thick);
+                sw.WriteLine("66");
+                sw.WriteLine("1");
+                sw.WriteLine("70");
+                sw.WriteLine("8");                
+                for (int j = 0; j < POLYLINElist[i].points.Count; j++)
+                {
+                    sw.WriteLine("0");
+                    sw.WriteLine("VERTEX");
+                    sw.WriteLine("8");
+                    sw.WriteLine(POLYLINElist[i].layer);
+                    sw.WriteLine("70");
+                    sw.WriteLine("32");
+                    sw.WriteLine("10");
+                    sw.WriteLine(POLYLINElist[i].points[j].x);
+                    sw.WriteLine("20");
+                    sw.WriteLine(POLYLINElist[i].points[j].y);
+                    sw.WriteLine("30");
+                    sw.WriteLine(POLYLINElist[i].points[j].z);
+                }
+
+                sw.WriteLine("0");
+                sw.WriteLine("SEQEND");
+                sw.WriteLine("0");                
+            }
+        }
+
+
         /// <summary>
         /// Save all entities in file
         /// </summary>
@@ -552,6 +729,7 @@ namespace DXF
             if (ARClist.Count > 0) saveArc(dxf);
             if (CIRCLElist.Count > 0) saveCircle(dxf);
             if (POINTlist.Count > 0) savePoint(dxf);
+            if (TRIANGLElist.Count > 0) saveTriangle(dxf);
             spodek(dxf);
             dxf.Close();
         }
@@ -569,7 +747,9 @@ namespace DXF
                 if (radek == "LINE") importLine(dxf);
                 if (radek == "CIRCLE") importCircle(dxf);                
                 if (radek == "ARC") importArc(dxf);
-                if ((radek == "TEXT") || (radek == "MTEXT")) importText(dxf);                
+                if (radek == "3DFACE") importTriangle(dxf);
+                if ((radek == "TEXT") || (radek == "MTEXT")) importText(dxf);
+                if (radek == "POLYLINE") importPolyline(dxf);
             }
 
         }
@@ -606,8 +786,86 @@ namespace DXF
 
         }
 
+        private void importTriangle(StreamReader dxf)
+        {
+            TRIANGLE triangle = new TRIANGLE();
+            triangle.point1 = new POINT();
+            triangle.point2 = new POINT();
+            triangle.point3 = new POINT();
+
+            string radek1, radek2;
+            bool end = false;
+
+            while (end == false)
+            {
+                radek1 = dxf.ReadLine();
+                radek1 = RemoveWhiteSpaces(radek1);
+                if (radek1 == "0")
+                {
+                    end = true;
+                    continue;
+                }
+                radek2 = dxf.ReadLine();
+                radek2 = RemoveWhiteSpaces(radek2);
+
+                if (radek1 == "8") triangle.layer = radek2;
+                if (radek1 == "62") triangle.color = Convert.ToInt32(radek2);
+                if (radek1 == "39") triangle.thick = Convert.ToDouble(radek2);
+                if (radek1 == "10") triangle.point1.x = Convert.ToDouble(radek2);
+                if (radek1 == "20") triangle.point1.y = Convert.ToDouble(radek2);
+                if (radek1 == "30") triangle.point1.z = Convert.ToDouble(radek2);
+                if (radek1 == "11") triangle.point2.x = Convert.ToDouble(radek2);
+                if (radek1 == "21") triangle.point2.y = Convert.ToDouble(radek2);
+                if (radek1 == "31") triangle.point2.z = Convert.ToDouble(radek2);
+                if (radek1 == "12") triangle.point3.x = Convert.ToDouble(radek2);
+                if (radek1 == "22") triangle.point3.y = Convert.ToDouble(radek2);
+                if (radek1 == "32") triangle.point3.z = Convert.ToDouble(radek2);
+
+            }
+
+            TRIANGLElist.Add(triangle);
+
+        }
+
         private void importLine(StreamReader dxf)
         {            
+            LINE line = new LINE();
+
+            string radek1, radek2;
+            bool end = false;
+
+            while (end == false)
+            {
+                radek1 = dxf.ReadLine();
+                radek1 = RemoveWhiteSpaces(radek1);
+                if (radek1 == "0")
+                {
+                    end = true;
+                    continue;
+                }
+                radek2 = dxf.ReadLine();
+                radek2 = RemoveWhiteSpaces(radek2);
+
+                if (radek1 == "8") line.layer = radek2;
+                if (radek1 == "62") line.color = Convert.ToInt32(radek2);
+                if (radek1 == "39") line.thick = Convert.ToDouble(radek2);
+                if (radek1 == "10") line.x1 = Convert.ToDouble(radek2);
+                if (radek1 == "20") line.y1 = Convert.ToDouble(radek2);
+                if (radek1 == "30") line.z1 = Convert.ToDouble(radek2);
+                if (radek1 == "11") line.x2 = Convert.ToDouble(radek2);
+                if (radek1 == "21") line.y2 = Convert.ToDouble(radek2);
+                if (radek1 == "33") line.z2 = Convert.ToDouble(radek2);
+
+            }
+
+            LINElist.Add(line);
+        }
+
+
+        private void importPolyline(StreamReader dxf)
+        {
+            // TODO
+            
             LINE line = new LINE();
 
             string radek1, radek2;
@@ -775,6 +1033,16 @@ namespace DXF
                 if (layers.Contains(text.layer) == false) layers.Add(text.layer);
             }
 
+            foreach (TRIANGLE triangle in TRIANGLElist)
+            {
+                if (layers.Contains(triangle.layer) == false) layers.Add(triangle.layer);
+            }
+
+            foreach (POLYLINE polyline in POLYLINElist)
+            {
+                if (layers.Contains(polyline.layer) == false) layers.Add(polyline.layer);
+            }
+
             return layers;
         }
 
@@ -823,6 +1091,70 @@ namespace DXF
             }
 
             return list;
+        }
+
+        public List<string> ExportTriangles(string layer)
+        {
+            List<string> list = new List<string>();
+            if (layer == null)
+            {
+                foreach (TRIANGLE triangle in TRIANGLElist)
+                {
+                    string name = "";
+                    if ((triangle.point1.name != null) || (triangle.point1.name != "")) name = triangle.point1.name;                    
+                    list.Add(name + " " + (-triangle.point1.x).ToString() + " " + (-triangle.point1.y).ToString() + " " + (triangle.point1.z).ToString());
+                    name = "";
+                    if ((triangle.point2.name != null) || (triangle.point2.name != "")) name = triangle.point2.name;
+                    list.Add(name + " " + (-triangle.point2.x).ToString() + " " + (-triangle.point2.y).ToString() + " " + (triangle.point2.z).ToString());
+                    name = "";
+                    if ((triangle.point3.name != null) || (triangle.point3.name != "")) name = triangle.point3.name;
+                    list.Add(name + " " + (-triangle.point3.x).ToString() + " " + (-triangle.point3.y).ToString() + " " + (triangle.point3.z).ToString());
+                }
+            }
+            else
+            {
+                var pl = TRIANGLElist.Where(p => p.layer == layer);
+                List<TRIANGLE> myTriangles = new List<TRIANGLE>(pl);
+                int x = 1;
+                foreach (TRIANGLE triangle in myTriangles)
+                {                    
+                    string name = x.ToString();
+                    x++;
+                    list.Add(name + " " + (-triangle.point1.x).ToString() + " " + (-triangle.point1.y).ToString() + " " + (triangle.point1.z).ToString());
+                    name = x.ToString();
+                    x++;                    
+                    list.Add(name + " " + (-triangle.point2.x).ToString() + " " + (-triangle.point2.y).ToString() + " " + (triangle.point2.z).ToString());
+                    name = x.ToString();
+                    x++;
+                    list.Add(name + " " + (-triangle.point3.x).ToString() + " " + (-triangle.point3.y).ToString() + " " + (triangle.point3.z).ToString());
+                }
+            }
+
+            return list;
+        }
+
+        public void FindPointNumberToTriangles()
+        {
+            for (int i = 0; i < TRIANGLElist.Count; i++)            
+            {
+                for (int j = 0; j < TEXTlist.Count; j++)
+                {
+                    if ((TRIANGLElist[i].point1.x == TEXTlist[j].x) && (TRIANGLElist[i].point1.y == TEXTlist[j].y) && (TRIANGLElist[i].point1.y == TEXTlist[j].y))
+                    {
+                        TRIANGLElist[i].point1.name = TEXTlist[j].write;
+                    }
+
+                    if ((TRIANGLElist[i].point2.x == TEXTlist[j].x) && (TRIANGLElist[i].point2.y == TEXTlist[j].y) && (TRIANGLElist[i].point2.y == TEXTlist[j].y))
+                    {
+                        TRIANGLElist[i].point2.name = TEXTlist[j].write;
+                    }
+
+                    if ((TRIANGLElist[i].point3.x == TEXTlist[j].x) && (TRIANGLElist[i].point3.y == TEXTlist[j].y) && (TRIANGLElist[i].point3.y == TEXTlist[j].y))
+                    {
+                        TRIANGLElist[i].point3.name = TEXTlist[j].write;
+                    }
+                }                                
+            }
         }
 
         public TEXT GetCoordinates(string pointName)
